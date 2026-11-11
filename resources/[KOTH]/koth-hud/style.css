@@ -1,450 +1,382 @@
-@import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Inter:wght@400;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700;800&display=swap');
 
 /* ==========================================================
-   KOTH HUD — "Tactical" theme
-   Same element IDs as before, so script.js keeps working.
+   KOTH HUD — compact "minimal" layout
+   compass top · kill feed top-right · slots bottom-center
+   stats (money / xp / teams) bottom-right · health bottom-left
    ========================================================== */
 
 :root {
-  --panel: rgba(12, 14, 18, 0.72);
-  --panel-2: rgba(255, 255, 255, 0.06);
-  --line: rgba(255, 255, 255, 0.10);
-  --text: #eef1f5;
-  --muted: #9aa3ae;
-  --accent: #f5b83d;
+  --bg: rgba(14, 16, 20, 0.62);
+  --bg-strong: rgba(14, 16, 20, 0.78);
+  --line: rgba(255, 255, 255, 0.12);
+  --text: #f3f4f6;
+  --muted: #a1a1aa;
+  --money: #4ade80;
+  --xp: #22c55e;
+  --flag: #facc15;
   --red: #ef4444;
   --blue: #3b82f6;
   --green: #22c55e;
-  --hp: #e5484d;
-  --xp: #f5b83d;
-  --cut: 10px;
+  --hp: #22c55e;
+  --shadow: 0 1px 2px rgba(0, 0, 0, .9);
 }
 
 * {
-  font-family: 'Rajdhani', 'Inter', sans-serif;
+  font-family: 'Inter', sans-serif;
   margin: 0;
   padding: 0;
   box-sizing: border-box;
   user-select: none;
-  text-decoration: none;
   list-style: none;
   outline: none;
 }
 
-html, body {
-  height: 100%;
-  overflow: hidden;
-  background: transparent;
-}
+html, body { height: 100%; overflow: hidden; background: transparent; }
 
 .hud {
-  display: flex;
-  flex-direction: column;
+  position: relative;
+  width: 100vw;
   height: 100vh;
   color: var(--text);
+  text-shadow: var(--shadow);
 }
+.hidden { display: none !important; }
 
-/* ---------- Team score bar (top center) ---------- */
+/* ---------- Compass ---------- */
 
-.hud .teams {
-  position: relative;
-  display: flex;
-  justify-content: center;
-  gap: 10px;
-  width: 100%;
-  margin-top: 22px;
-}
-
-.hud .teams > div {
-  position: relative;
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  height: 38px;
-  padding: 0 16px 0 18px;
-  background: var(--panel);
-  color: var(--text);
-  font-size: 18px;
-  font-weight: 700;
-  letter-spacing: .5px;
-  clip-path: polygon(var(--cut) 0, 100% 0, calc(100% - var(--cut)) 100%, 0 100%);
-  backdrop-filter: blur(6px);
-}
-
-.hud .teams > div::before {
-  content: "";
+.compass {
   position: absolute;
-  left: 0; right: 0; bottom: 0;
-  height: 3px;
-}
-.hud .teams > div::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  opacity: .16;
-  pointer-events: none;
-}
-
-.hud .teams .red::before,  .hud .teams .red::after  { background: var(--red); }
-.hud .teams .blue::before, .hud .teams .blue::after { background: var(--blue); }
-.hud .teams .green::before,.hud .teams .green::after{ background: var(--green); }
-
-.hud .teams span {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  margin: 0;
-}
-
-.hud .teams i { font-size: 13px; opacity: .75; }
-.hud .teams .red i   { color: #fca5a5; }
-.hud .teams .blue i  { color: #93c5fd; }
-.hud .teams .green i { color: #86efac; }
-
-/* the point counter is the headline number */
-.hud .teams #redpoint, .hud .teams #bluepoint, .hud .teams #greenpoint {
-  font-size: 22px;
-}
-
-/* ---------- Bottom container ---------- */
-
-div.bag {
-  position: absolute;
-  height: 250px;
-  width: 100%;
-  bottom: 0;
-  color: var(--text);
-}
-
-/* ---------- Player card (bottom left) ---------- */
-
-div.player {
-  position: absolute;
-  left: 40px;
-  bottom: 74px;
-  width: 320px;
-  height: 58px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 18px;
-  background: var(--panel);
-  border-left: 3px solid var(--accent);
-  clip-path: polygon(0 0, 100% 0, 100% calc(100% - var(--cut)), calc(100% - var(--cut)) 100%, 0 100%);
-  backdrop-filter: blur(6px);
-}
-
-div.player .name {
-  font-size: 22px;
-  font-weight: 700;
-  letter-spacing: .5px;
-  text-transform: uppercase;
-  max-width: 180px;
+  top: 8px;
+  left: 50%;
+  width: 560px;
+  height: 36px;
+  transform: translateX(-50%);
   overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 18%, #000 82%, transparent);
+          mask-image: linear-gradient(90deg, transparent, #000 18%, #000 82%, transparent);
 }
-
-div.player .money {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 20px;
-  font-weight: 700;
-  color: #4ade80;
-}
-div.player .money i { color: #4ade80 !important; font-size: 15px; }
-div.player .money #money::before { content: "$"; margin-right: 1px; }
-
-/* ---------- XP bar ---------- */
-
-div.xp-bar {
+.compass-tape {
   position: absolute;
-  left: 40px;
-  bottom: 40px;
-  width: 320px;
-  height: 26px;
-  background: var(--panel);
-  overflow: hidden;
-  clip-path: polygon(0 0, 100% 0, calc(100% - 8px) 100%, 0 100%);
-}
-
-div.xp-bar #mana {
-  display: block;
-  height: 100%;
-  width: 40%;
-  background: linear-gradient(90deg, #c98a17, var(--xp));
-  box-shadow: 0 0 12px rgba(245, 184, 61, .45);
-  transition: width 400ms ease;
-}
-div.xp-bar #mana br { display: none; }
-
-div.xp-bar .lvl {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 8px;
-  z-index: 2;
-}
-
-div.xp-bar .lvl span {
-  min-width: 26px;
-  height: 18px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0 5px;
-  font-size: 13px;
-  font-weight: 700;
-  background: rgba(0, 0, 0, .55);
-  border: 1px solid var(--line);
-}
-div.xp-bar .lvl #from::before, div.xp-bar .lvl #to::before {
-  content: "LV ";
-  font-size: 10px;
-  margin-right: 2px;
-  opacity: .7;
-}
-
-div.xp-bar .granted {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 14px;
-  font-weight: 700;
-  text-shadow: 0 1px 2px #000;
-  z-index: 2;
-}
-div.xp-bar .granted span { margin: 0 4px; }
-
-/* ---------- Equipped weapon (bottom right) ---------- */
-
-.equipedWepon {
-  position: absolute;
-  right: 40px;
-  bottom: 58px;
-  width: 330px;
-  height: 92px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 10px 18px;
-  background: var(--panel);
-  border-right: 3px solid var(--accent);
-  clip-path: polygon(var(--cut) 0, 100% 0, 100% 100%, 0 100%, 0 var(--cut));
-  backdrop-filter: blur(6px);
-}
-
-.equipedWepon.get { animation: 350ms slideUp ease-out forwards; }
-
-div.bag .weapon {
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 170px;
-  height: 100%;
-  background: none;
-  padding: 0;
-}
-div.bag .equipedWepon .weapon img {
-  max-width: 100%;
-  max-height: 60px;
-  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, .6));
-}
-
-div.bag .equipedWepon .ammo {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 6px;
-  width: auto;
-}
-div.bag .equipedWepon .ammo span:nth-child(1) {
-  font-size: 46px;
-  font-weight: 700;
-  line-height: 1;
-  margin: 0;
-  font-variant-numeric: tabular-nums;
-}
-div.bag .equipedWepon .ammo img { width: 26px; opacity: .8; }
-
-/* reload progress — thin bar on top edge of the weapon card */
-div.bag div.reload {
-  position: absolute;
-  left: 0;
-  right: 0;
   top: 0;
-  width: auto;
-  height: 3px;
-  background: transparent;
-}
-div.bag div.reload span {
-  display: none;
+  left: 0;
   height: 100%;
-  background: var(--accent);
-  box-shadow: 0 0 10px var(--accent);
-  animation: 2s reload linear;
+  white-space: nowrap;
+  will-change: transform;
 }
-
-/* ---------- Weapon slots 1 / 2 / 3 ---------- */
-
-div.bag .weapon1, div.bag .weapon2, div.bag .weapon3 {
+.compass-tape .mark {
   position: absolute;
-  bottom: 158px;
-  width: 104px;
-  height: 46px;
-  display: none;
-  align-items: center;
-  justify-content: center;
-  padding: 6px 10px 6px 22px;
-  background: var(--panel);
-  border-top: 2px solid rgba(255, 255, 255, .18);
-  animation: 350ms slideUp ease-out forwards;
-}
-div.bag .weapon1 { right: 266px; }
-div.bag .weapon2 { right: 153px; }
-div.bag .weapon3 { right: 40px; }
-
-div.bag .weapon1::before, div.bag .weapon2::before, div.bag .weapon3::before {
-  position: absolute;
-  top: 4px;
-  left: 7px;
-  font-size: 13px;
+  top: 0;
+  width: 40px;
+  margin-left: -20px;
+  text-align: center;
+  font-size: 12px;
   font-weight: 700;
-  color: var(--accent);
+  color: rgba(255, 255, 255, .9);
 }
-div.bag .weapon1::before { content: "1"; }
-div.bag .weapon2::before { content: "2"; }
-div.bag .weapon3::before { content: "3"; }
-
-div.bag .weapon1 img, div.bag .weapon2 img, div.bag .weapon3 img {
-  max-width: 100%;
-  max-height: 30px;
-  opacity: .85;
-}
-.bind { display: none; }
-
-.weapon1.remove, .weapon2.remove, .weapon3.remove {
-  animation: 300ms reverse slideUp ease-in forwards;
-}
-
-/* ---------- Health ---------- */
-
-div.bag div.life {
-  position: absolute;
-  right: 40px;
-  bottom: 40px;
-  width: 330px;
-  height: 10px;
-  background: rgba(0, 0, 0, .6);
-  border: 1px solid var(--line);
-  overflow: hidden;
-}
-div.bag div.life span {
+.compass-tape .mark::after {
+  content: "";
   display: block;
-  height: 100%;
-  max-width: 100%;
-  min-width: 0;
-  background: linear-gradient(90deg, #b91c1c, var(--hp));
-  box-shadow: 0 0 10px rgba(229, 72, 77, .6);
-  transition: width 300ms ease-out;
+  width: 1px;
+  height: 6px;
+  margin: 2px auto 0;
+  background: rgba(255, 255, 255, .55);
+}
+.compass-tape .mark.main {
+  top: -3px;
+  font-size: 20px;
+  font-weight: 800;
+  color: #fff;
+}
+.compass-tape .mark.main::after { height: 0; }
+.compass-needle {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  width: 0;
+  height: 0;
+  margin-left: -5px;
+  border: 5px solid transparent;
+  border-bottom-color: #fff;
 }
 
-/* ---------- Kill feed (top right) ---------- */
+/* ---------- Kill feed ---------- */
 
 div.killevent {
   position: absolute;
-  top: 22px;
-  right: 22px;
+  top: 16px;
+  right: 18px;
   display: flex;
   flex-direction: column;
   align-items: flex-end;
-  gap: 6px;
-  width: 380px;
+  gap: 4px;
+  width: 360px;
 }
-
 div.event {
   display: flex;
   align-items: center;
-  gap: 10px;
-  height: 34px;
-  padding: 0 14px;
-  max-width: 380px;
-  background: var(--panel);
-  border-right: 3px solid var(--accent);
-  color: var(--text);
-  font-size: 17px;
+  gap: 8px;
+  height: 28px;
+  padding: 0 12px;
+  background: var(--bg);
+  border-left: 3px solid rgba(255, 255, 255, .25);
+  font-size: 14px;
   font-weight: 700;
-  margin: 0;
-  animation: 250ms feedIn ease-out;
+  animation: fadeLeft 200ms ease-out;
 }
-
 span#killer, span#killed {
-  width: auto;
   max-width: 130px;
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
 }
-
-span#killer.red, span#killed.red       { color: #f87171; }
+span#killer.red,    span#killed.red    { color: #f87171; }
+span#killer.bluee,  span#killed.bluee  { color: #60a5fa; }
 span#killer.greeen, span#killed.greeen { color: #4ade80; }
-span#killer.bluee, span#killed.bluee   { color: #60a5fa; }
+div.event .weapon { display: flex; align-items: center; }
+div.event .weapon img { height: 16px; transform: rotateY(180deg); opacity: .95; }
 
-div.event .weapon { display: flex; align-items: center; justify-content: center; }
-div.event .weapon img {
-  height: 20px;
-  width: auto;
-  margin: 0;
-  transform: rotateY(180deg);
-  opacity: .9;
+/* ---------- Health (under the GTA minimap) ---------- */
+
+.life {
+  position: absolute;
+  left: 1.5vw;
+  bottom: 1.2vh;
+  width: 14.2vw;
+  height: 14px;
+  background: rgba(0, 0, 0, .55);
+  border: 1px solid rgba(0, 0, 0, .7);
 }
-div.event .weapon img#headshot { height: 18px; margin-left: 4px; }
+.life span {
+  display: block;
+  height: 100%;
+  width: 100%;
+  max-width: 100%;
+  background: linear-gradient(180deg, #34d36b, #16a34a);
+  transition: width 250ms ease-out, background 250ms;
+}
+.life span.low { background: linear-gradient(180deg, #f87171, #dc2626); }
 
-/* ---------- XP / money popups ---------- */
+/* ---------- Weapon slots (bottom center) ---------- */
+
+.slots {
+  position: absolute;
+  left: 50%;
+  bottom: 14px;
+  display: flex;
+  gap: 6px;
+  transform: translateX(-50%);
+}
+.slot {
+  position: relative;
+  width: 66px;
+  height: 66px;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 8px;
+  background: var(--bg);
+  border: 1px solid var(--line);
+  animation: fadeUp 200ms ease-out;
+}
+.slot img { max-width: 100%; max-height: 100%; filter: drop-shadow(0 1px 2px rgba(0,0,0,.8)); }
+.slot::after {
+  position: absolute;
+  top: 3px;
+  right: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, .85);
+}
+.weapon1::after { content: "1"; }
+.weapon2::after { content: "2"; }
+.weapon3::after { content: "3"; }
+.slot.active {
+  background: var(--bg-strong);
+  border-color: rgba(255, 255, 255, .7);
+  box-shadow: inset 0 -3px 0 #fff;
+}
+
+/* currently held weapon + ammo */
+.slot.equiped {
+  width: auto;
+  min-width: 170px;
+  gap: 10px;
+  padding: 8px 14px;
+  border-color: rgba(255, 255, 255, .25);
+}
+.slot.equiped .weapon { display: flex; align-items: center; height: 100%; max-width: 100px; }
+.slot.equiped .ammo span {
+  font-size: 30px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+.slot.equiped .reload {
+  position: absolute;
+  left: 0; right: 0; bottom: 0;
+  height: 3px;
+}
+.slot.equiped .reload span {
+  display: none;
+  height: 100%;
+  background: var(--flag);
+  animation: reload 2s linear;
+}
+
+/* ---------- XP / money feed ---------- */
+
+.xpfeed {
+  position: absolute;
+  right: 268px;
+  bottom: 96px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 3px;
+}
+.xpfeed .row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 150px;
+  padding: 3px 10px;
+  background: var(--bg);
+  font-size: 12px;
+  font-weight: 600;
+  animation: fadeLeft 200ms ease-out;
+}
+.xpfeed .row .reason { flex: 1; }
+.xpfeed .row .xp { color: var(--flag); }
+.xpfeed .row .cash { color: var(--money); }
+.xpfeed .row.info .reason { color: #60a5fa; }
+.xpfeed .row.out { animation: fadeOut 300ms ease-in forwards; }
+
+/* ---------- Stats panel (bottom right) ---------- */
+
+.stats {
+  position: absolute;
+  right: 18px;
+  bottom: 12px;
+  width: 236px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.stats .money {
+  text-align: right;
+  font-size: 34px;
+  font-weight: 800;
+  line-height: 1;
+  color: var(--money);
+  letter-spacing: .5px;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, .9), 0 0 1px #000;
+}
+
+.stats .level {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.stats .level .lvl {
+  min-width: 26px;
+  font-size: 14px;
+  font-weight: 800;
+  text-align: center;
+}
+.stats .xp-bar {
+  position: relative;
+  flex: 1;
+  height: 18px;
+  background: rgba(0, 0, 0, .6);
+  border: 1px solid rgba(0, 0, 0, .7);
+  overflow: hidden;
+}
+.stats .xp-bar #mana {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 0;
+  background: linear-gradient(180deg, #34d36b, #16a34a);
+  transition: width 400ms ease;
+}
+.stats .xp-bar .granted {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  font-size: 11px;
+  font-weight: 700;
+}
+.stats .xp-bar .granted span { margin: 0 3px; }
+
+.stats .teams {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+  margin-top: 2px;
+}
+.stats .team {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+.stats .team .target, .stats .team .players {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 17px;
+  font-weight: 800;
+}
+.stats .team .target i { color: var(--flag); font-size: 15px; }
+.stats .team .players i { font-size: 14px; }
+.stats .team .point {
+  width: 100%;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  font-weight: 800;
+  border: 1px solid rgba(0, 0, 0, .35);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .25);
+}
+.stats .team.blue .point  { background: var(--blue); }
+.stats .team.red .point   { background: var(--red); }
+.stats .team.green .point { background: var(--green); }
+
+/* ---------- Center message ---------- */
 
 div.newxp {
   position: fixed;
-  background: transparent;
-  text-shadow: 0 2px 6px rgba(0, 0, 0, .8);
+  top: 30%;
+  left: 50%;
+  transform: translateX(-50%);
+  text-align: center;
+  text-shadow: 0 2px 6px rgba(0, 0, 0, .9);
 }
-#xpright { bottom: 160px; left: 40px; text-align: left; }
-#xpcenter { top: 38%; left: 50%; transform: translateX(-50%); text-align: center; }
+div.newxp h1 { font-size: 30px; font-weight: 800; color: #f87171; }
+div.newxp h2 { font-size: 20px; font-weight: 700; color: var(--muted); }
 
-div.newxp h1 {
-  font-size: 28px;
-  font-weight: 700;
-  letter-spacing: .5px;
-  color: #4ade80;
-}
-div.newxp h2 {
-  font-size: 22px;
-  font-weight: 700;
-  color: var(--xp);
-  margin: 0;
+/* medkit cooldown (created by script.js) */
+#medkitCD {
+  position: absolute;
+  top: -22px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 14px;
+  font-weight: 800;
+  color: #f87171;
 }
 
 /* ---------- Animations ---------- */
 
-@keyframes slideUp {
-  from { opacity: 0; transform: translateY(12px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-@keyframes feedIn {
-  from { opacity: 0; transform: translateX(20px); }
-  to   { opacity: 1; transform: translateX(0); }
-}
-@keyframes reload {
-  from { width: 0; }
-  to   { width: 100%; }
-}
+@keyframes fadeUp   { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+@keyframes fadeLeft { from { opacity: 0; transform: translateX(12px); } to { opacity: 1; transform: none; } }
+@keyframes fadeOut  { to { opacity: 0; transform: translateX(12px); } }
+@keyframes reload   { from { width: 0; } to { width: 100%; } }
 
-/* 4K screens */
-@media screen and (min-width: 3840px) {
-  .hud { zoom: 1.8; }
-}
+/* 1440p / 4K */
+@media screen and (min-width: 2560px) { .hud { zoom: 1.33; } }
+@media screen and (min-width: 3840px) { .hud { zoom: 2; } }

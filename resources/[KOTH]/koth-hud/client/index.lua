@@ -95,7 +95,8 @@ Citizen.CreateThread(function()
       w = getWeapon
       SendNUIMessage(
         {
-        life = tonumber(playerLife)
+        life = tonumber(playerLife),
+        heading = (360.0 - GetGameplayCamRot(2).z) % 360.0
         --ammo = getAmmo,
         }
       )

@@ -230,12 +230,19 @@ RegisterNUICallback('rent', function(data)
         open = false
     else
         TriggerServerEvent("Koth-GetItem",Pass["createcar"], data.type, data.item,data.price,data.class)
+        RecordLoadoutItem(data.item, data.class, data.price, "rent")
     end
     TriggerServerEvent("Koth-RemoveMoney", data.price)
 end)
   
 RegisterNUICallback('selectClass', function(data)
+    ApplyClass(data.class)
+end)
+
+function ApplyClass(class)
+    local data = { class = class }
     if data.class ~= "Ground" and data.class ~= "Air"  then
+        StartLoadout(data.class)
         TriggerEvent("KOTH-MEDIC",3)
         TriggerEvent("KOTH-MEDICREMOVE")
         ammoStore = {}
@@ -279,7 +286,7 @@ RegisterNUICallback('selectClass', function(data)
             SetCurrentPedWeapon(PlayerPedId(), GetHashKey('WEAPON_UNARMED'), true)
        end
     end
-end)
+end
   
 RegisterNetEvent("Koth:AddOwned")
 AddEventHandler("Koth:AddOwned", function(weapons,price)
@@ -302,6 +309,7 @@ RegisterNUICallback('owned', function(data)
         open = false
     else
         TriggerServerEvent("Koth-GetItem",Pass["createcar"], data.type, data.item,data.price,data.class)
+        RecordLoadoutItem(data.item, data.class, 0, "owned")
     end
 end)
 
@@ -636,4 +644,132 @@ Citizen.CreateThread(function()
             RemoveWeaponFromPed(ped, GetHashKey('WEAPON_MARKSMANRIFLE_MK2'))
         end
     end
+end)
+
+-- ============================================================
+--  Last loadout / repurchase after death
+--  Remembers the class and the weapons taken from the shop during
+--  this life. After respawning at base a "Repurchase Loadout?" popup
+--  offers to buy the same class + weapons again in one click.
+-- ============================================================
+
+local CLASS_LABELS = { infantry = "Infantry", medic = "Medic", explosives = "Explosives", support = "Support", marksmamb = "Marksman" }
+local CLASS_GADGET = { medic = "medkit", support = "repairkit" }
+
+local currentLoadout = { class = nil, items = {} }   -- this life
+local lastLoadout = nil                              -- snapshot taken on death
+local repurchasePending = false
+local repurchaseOpen = false
+
+local function priceOf(v)
+    local n = tonumber(v)
+    return n or 0                                    -- "free" -> 0
+end
+
+local function findItem(id)
+    for _, it in pairs(_items or {}) do
+        if it.id == id and it.cat == "weapon" then return it end
+    end
+end
+
+function StartLoadout(class)
+    currentLoadout = { class = class, items = {} }
+end
+
+function RecordLoadoutItem(id, wrap, price, kind)
+    if not currentLoadout.class or not wrap then return end
+    local it = findItem(id)
+    currentLoadout.items[wrap] = {
+        id = id,
+        wrap = wrap,
+        name = it and it.name or id,
+        thumb = it and it.thumb or nil,
+        price = kind == "rent" and priceOf(price) or 0,
+        rawPrice = price,
+        kind = kind,
+    }
+end
+
+-- snapshot on death (death.lua fires this while the player is dead)
+AddEventHandler("koth-core:PlayerDied", function()
+    if repurchasePending then return end
+    if currentLoadout.class and next(currentLoadout.items) then
+        lastLoadout = json.decode(json.encode(currentLoadout))
+        repurchasePending = true
+    end
+end)
+
+local function buildPopup()
+    local slots, total = {}, 0
+    for i, wrap in ipairs({ "primary", "secondary", "throwable" }) do
+        local it = lastLoadout.items[wrap]
+        if it then
+            total = total + it.price
+            slots[#slots + 1] = { slot = i, id = it.id, name = it.name, thumb = it.thumb, price = it.price, owned = it.kind == "owned" }
+        end
+    end
+    local gadget = CLASS_GADGET[lastLoadout.class]
+    if gadget then slots[#slots + 1] = { slot = 4, id = gadget, name = gadget == "medkit" and "Medkit" or "Repair kit", gadget = true, price = 0 } end
+    return {
+        type = "repurchase",
+        class = CLASS_LABELS[lastLoadout.class] or lastLoadout.class,
+        slots = slots,
+        total = total,
+        money = _player[1].money or 0,
+        timeout = 20,
+    }
+end
+
+-- revived by a medic (weapons kept) -> nothing to repurchase
+AddEventHandler("core:ResetDeathStatus", function(revived)
+    if revived then repurchasePending = false end
+end)
+
+-- respawned at base -> offer the last loadout
+AddEventHandler("KOTH:ReturnBase", function()
+    if not repurchasePending or not lastLoadout then return end
+    repurchasePending = false
+    Citizen.SetTimeout(1200, function()
+        if open or IsEntityDead(PlayerPedId()) then return end
+        repurchaseOpen = true
+        SendNUIMessage(buildPopup())
+        SetNuiFocus(true, true)
+    end)
+end)
+
+local function closeRepurchase()
+    repurchaseOpen = false
+    SetNuiFocus(false, false)
+    SendNUIMessage({ type = "repurchaseClose" })
+end
+
+RegisterNUICallback("repurchaseCancel", function(_, cb)
+    closeRepurchase()
+    cb("ok")
+end)
+
+RegisterNUICallback("repurchaseBuy", function(_, cb)
+    if not repurchaseOpen or not lastLoadout then closeRepurchase() return cb("ok") end
+    local popup = buildPopup()
+    if (_player[1].money or 0) < popup.total then
+        cb({ error = "Not enough money!" })
+        return
+    end
+    closeRepurchase()
+    cb("ok")
+
+    local lo = lastLoadout
+    ApplyClass(lo.class)
+    Citizen.SetTimeout(300, function()
+        for _, wrap in ipairs({ "primary", "secondary", "throwable" }) do
+            local it = lo.items[wrap]
+            if it then
+                TriggerServerEvent("Koth-GetItem", Pass["createcar"], "weapon", it.id, it.rawPrice, wrap)
+                if it.kind == "rent" then
+                    TriggerServerEvent("Koth-RemoveMoney", it.rawPrice)
+                end
+                RecordLoadoutItem(it.id, wrap, it.rawPrice, it.kind)
+            end
+        end
+    end)
 end)

@@ -24,7 +24,8 @@ files {
   'content/item_images/*.png',
   'content/item_images/*.PNG',
   'content/item_images/*.jpg',
-  'jquery.min.js'
+  'jquery.min.js',
+  'rebuy.js'
 }
 
 data_file 'WEAPONINFO_FILE_PATCH' 'weapons.meta'

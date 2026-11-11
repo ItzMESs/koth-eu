@@ -328,3 +328,62 @@ button {
 }
 .toast.show { opacity: 1; }
 .toast.error { border-left-color: var(--danger); color: #fca5a5; }
+
+/* ==========================================================
+   Repurchase last loadout (after death)
+   ========================================================== */
+
+.rebuy {
+  position: fixed;
+  inset: 0;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+.rebuy.open { display: flex; }
+.rebuy-panel {
+  width: 250px;
+  padding: 16px 14px 14px;
+  background: rgba(8, 8, 9, .95);
+  border-top: 3px solid var(--danger);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, .6);
+  color: var(--text);
+  pointer-events: auto;
+  animation: rebuyIn 200ms ease-out;
+}
+.rebuy-panel h2 { font-size: 17px; font-weight: 800; text-align: center; margin-bottom: 12px; }
+.rebuy-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.rb-slot {
+  position: relative;
+  height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, .05);
+}
+.rb-slot .n { position: absolute; top: 5px; right: 7px; font-size: 11px; font-weight: 700; color: #d4d4d8; }
+.rb-slot img { max-width: 82%; max-height: 42px; filter: drop-shadow(0 2px 4px rgba(0,0,0,.7)); }
+.rb-slot .lbl { position: absolute; left: 6px; bottom: 4px; right: 6px; font-size: 9px; font-weight: 600; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.rb-slot .own { position: absolute; top: 5px; left: 6px; font-size: 8px; font-weight: 800; color: var(--accent); }
+.rebuy-info { margin: 14px 4px 0; }
+.rebuy-info b { display: block; font-size: 15px; }
+.rebuy-info span { font-size: 11px; color: var(--muted); }
+.rebuy-error { min-height: 16px; margin: 6px 4px 0; font-size: 11px; font-weight: 600; color: #fca5a5; }
+.rebuy-actions { display: flex; gap: 6px; margin-top: 6px; }
+.rebuy-actions button {
+  flex: 1;
+  height: 34px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: .5px;
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, .15);
+}
+.rb-buy { background: #15a33a; }
+.rb-buy:hover { background: #1bbd45; }
+.rb-buy.disabled { background: #3f3f46; color: #a1a1aa; cursor: not-allowed; }
+.rb-cancel { background: #c81e1e; }
+.rb-cancel:hover { background: #e02424; }
+.rb-cancel small { font-size: 9px; opacity: .75; margin-left: 3px; }
+@keyframes rebuyIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }

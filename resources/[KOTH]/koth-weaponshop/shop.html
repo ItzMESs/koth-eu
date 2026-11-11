@@ -28,5 +28,23 @@
             <div class="toast" id="toast"></div>
         </div>
     </div>
+
+    <!-- Repurchase last loadout after death -->
+    <div class="rebuy" id="rebuy">
+        <div class="rebuy-panel">
+            <h2>Repurchase Loadout?</h2>
+            <div class="rebuy-grid" id="rebuySlots"></div>
+            <div class="rebuy-info">
+                <b>Last Loadout</b>
+                <span id="rebuyClass">-</span>
+            </div>
+            <div class="rebuy-error" id="rebuyError"></div>
+            <div class="rebuy-actions">
+                <button class="rb-buy" id="rebuyBuy">BUY: $0</button>
+                <button class="rb-cancel" id="rebuyCancel">CANCEL <small id="rebuyTimer"></small></button>
+            </div>
+        </div>
+    </div>
+    <script src="rebuy.js"></script>
 </body>
 </html>

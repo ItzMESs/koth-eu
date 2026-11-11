@@ -83,44 +83,12 @@ Citizen.CreateThread(function()
                 StartAudioScene("SWITCH_TO_MP_SCENE")
                 StartScreenEffect("DeathFailOut", -1, true)
 
-                if sec > 0 and isDead then
+                -- (the old native-text timer used to live here; the death
+                --  screen is now NUI, see client/deathscreen.lua)
+                if isDead then
                     Wait(1000)
-                    sec = sec - 1
                 end
-
-
-                Citizen.CreateThread(function()
-                    while sec > 0 and isDead do
-                        Citizen.Wait(0)
-            
-                        SetTextFont(4)
-                        SetTextScale(0.0, 0.5)
-                        SetTextColour(255, 255, 255, 255)
-                        SetTextDropshadow(0, 0, 0, 0, 255)
-                        SetTextDropShadow()
-                        SetTextOutline()
-                        SetTextCentre(true)
-                        
-                        local text = "Respawn automatic in : ~b~"..secondsToClock(sec).." ~w~seconds"
-            
-                       -- if sec <= 60 then
-                            text = text .. '\n' .. "Press [~b~E~w~] 5s ~w~to respawn in your base"
-            
-                        --end
-            
-                        BeginTextCommandDisplayText("STRING")
-                        AddTextComponentSubstringPlayerName(text)
-                        EndTextCommandDisplayText(0.5, 0.8)
-            
-                        DrawScaleformMovieFullscreen(scaleform, 255, 255, 255, 255)
-                    end
-            
-                   if sec <= 0 then
-                       TriggerEvent('core:ResetDeathStatus', false)
-                       TriggerEvent("KOTH:ReturnBase")
-                       sec = 60000*5
-                   end
-                end)
+                local killerPlayerIdx = killerid
 
                 local attacker_hipfire = not DecorGetBool(killer, '_IS_AIMING')
 
@@ -180,9 +148,11 @@ Citizen.CreateThread(function()
                 -- Check if headshot
                 local headshot = false
                 local _, outbone = GetPedLastDamageBone(ped)
-                if outbone == 31086 then 
-                    headshot = true 
+                if outbone == 31086 then
+                    headshot = true
                 end
+
+                ShowDeathScreen(killerPlayerIdx, killerid, killerweapon, killerinvehicle, killervehiclename, killdist, headshot)
 
                 if killer == ped or killer == -1 then
                     TriggerEvent('baseevents:onPlayerDied', killertype, { table.unpack(GetEntityCoords(ped)) })
@@ -235,20 +205,46 @@ AddEventHandler('koth-death:Distress', function()
     distressSent = false
 end)
 
--- TODO: WORK ON DEATH THREAD
+-- Respawn: hold E (DEATH_HOLD_MS) or bleed out after DEATH_BLEEDOUT seconds
 Citizen.CreateThread(function()
+    local deadSince = nil
+    local holdStart = nil
+    local lastSent = -1
     while true do
         Citizen.Wait(0)
         if isDead then
-            if buttonHeld(38, 150) then
-                TriggerEvent('core:ResetDeathStatus', false)
+            local now = GetGameTimer()
+            deadSince = deadSince or now
 
+            local respawn = false
+            if IsControlPressed(0, 38) then
+                holdStart = holdStart or now
+                local p = math.min(1.0, (now - holdStart) / DEATH_HOLD_MS)
+                local step = math.floor(p * 50)
+                if step ~= lastSent then
+                    lastSent = step
+                    SetDeathHoldProgress(p)
+                end
+                if p >= 1.0 then respawn = true end
+            elseif holdStart then
+                holdStart = nil
+                lastSent = -1
+                SetDeathHoldProgress(0)
+            end
+
+            if (now - deadSince) >= DEATH_BLEEDOUT * 1000 then
+                respawn = true
+            end
+
+            if respawn then
+                holdStart, deadSince, lastSent = nil, nil, -1
+                TriggerEvent('core:ResetDeathStatus', false)
                 TriggerEvent("KOTH:ReturnBase")
                 isDead = false
-            --elseif IsControlPressed(0, 47) and not distressSent then
-            --    distressSent = true
-            --    TriggerServerEvent('koth:medicneeded', GetEntityCoords(PlayerPedId()))
             end
+        else
+            deadSince, holdStart = nil, nil
+            Citizen.Wait(250)
         end
     end
 end)
@@ -282,6 +278,7 @@ end
 RegisterNetEvent("core:ResetDeathStatus")
 AddEventHandler("core:ResetDeathStatus", function(alors)
     TriggerServerEvent("SendLogs","Player revive "..GetPlayerName(PlayerId()).." !", "revive")
+    HideDeathScreen()
     ClearPedBloodDamage(PlayerPedId())
     if alors then
         isDead = false

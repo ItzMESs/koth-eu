@@ -95,6 +95,9 @@ local function startVote()
     chat("A team reached " .. math.floor(MAPVOTE_START) .. " points! Type ^3/mapvote^7 to vote for the next map.")
 end
 
+-- Used by the admin panel.
+function MapVoteStart() startVote() end
+
 -- Called from server.lua when the match ends.
 function MapVoteFinish()
     if MapVote.closed then return end

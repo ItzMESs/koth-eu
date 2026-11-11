@@ -28,7 +28,6 @@ client_scripts {
     'client/utils/*.lua',
     --'client/utils/discord.lua',
     'client/zone/*.lua',
-    'client/killstreak/*.lua',
     'client/props/*.lua',
 
     'client/*.lua',

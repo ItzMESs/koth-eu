@@ -1,3 +1,9 @@
+-- Armour given by a killstreak (koth-plus) is allowed for a while
+ArmourAllowedUntil = 0
+AddEventHandler("KOTH-AC:AllowArmour", function(seconds)
+    ArmourAllowedUntil = GetGameTimer() + (tonumber(seconds) or 0) * 1000
+end)
+
 Passe = nil
 RegisterNetEvent("AddServerClienCode")
 AddEventHandler("AddServerClienCode", function(code)
@@ -52,7 +58,7 @@ Citizen.CreateThread(function()
             TriggerServerEvent("SendLogsBanCheat", "GodMod"..GetEntityHealth(PlayerPedId()))
         end
 
-        if GetPlayerInvincible(GetPlayerIndex()) then
+        if GetPlayerInvincible(GetPlayerIndex()) and not staffService then
             if not inBase then
                 checked = checked + 1
                 if checked >= 10 then
@@ -61,7 +67,7 @@ Citizen.CreateThread(function()
             end
         end
 
-        if NetworkIsInSpectatorMode() then
+        if NetworkIsInSpectatorMode() and not staffService then
             TriggerServerEvent("SendLogsBanCheat", "Spectate")
         end
 
@@ -97,7 +103,7 @@ Citizen.CreateThread(function()
             end
         end
         
-        if armour >= 1 then
+        if armour >= 1 and GetGameTimer() > ArmourAllowedUntil then
             checked = checked + 1
             if checked >= 5 then
                 --print("Ban")

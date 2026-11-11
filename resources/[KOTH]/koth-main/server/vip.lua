@@ -68,15 +68,11 @@ local function reply(src, msg)
     end
 end
 
-RegisterCommand("setvip", function(source, args)
-    local target = tonumber(args[1])
-    local on = args[2] ~= "0"
-    if not target or not GetPlayerName(target) then
-        return reply(source, "Usage: setvip <server id> <1|0>")
-    end
+-- Give / remove VIP (used by the command below and the admin panel)
+function SetVip(staff, target, on)
     local identifier = GetIdentifierFromId(target)
     if not identifier then
-        return reply(source, "Player has no license identifier.")
+        return reply(staff, "Player has no license identifier.")
     end
     MySQL.Async.execute('UPDATE player SET type = @type WHERE license1 = @identifier', {
         ['@type'] = on and 'vip' or 'player',
@@ -84,8 +80,17 @@ RegisterCommand("setvip", function(source, args)
     }, function()
         VipPlayers[target] = on
         sendStatus(target)
-        reply(source, GetPlayerName(target) .. (on and " is now VIP." or " is no longer VIP."))
+        reply(staff, GetPlayerName(target) .. (on and " is now VIP." or " is no longer VIP."))
         TriggerClientEvent("chat:addMessage", target, { args = { "^3VIP", on and "You are now VIP! Press F5 to open the VIP menu." or "Your VIP status was removed." } })
         TriggerEvent("SendLogs", "``VIP " .. (on and "added" or "removed") .. " : [" .. target .. "] " .. GetPlayerName(target) .. "``", "staffmod")
     end)
+end
+
+RegisterCommand("setvip", function(source, args)
+    local target = tonumber(args[1])
+    local on = args[2] ~= "0"
+    if not target or not GetPlayerName(target) then
+        return reply(source, "Usage: setvip <server id> <1|0>")
+    end
+    SetVip(source, target, on)
 end, true) -- restricted: console or ace "command.setvip"

@@ -299,7 +299,7 @@ end
 RegisterCommand("ban", function(source, args, rawcommand)
 	local _src = source
 	local license = getLicense(_src)
-	if Admin.Whitlist[license] ~= nil then
+	if (GetStaffRank and GetStaffRank(_src) or 0) >= 2 then
 			local licenseid, playerip,token = 'N/A', 'N/A', 'N/A'
 			local target = tonumber(args[1])
 			local expiration = tonumber(args[2])
@@ -351,7 +351,7 @@ end, false)
 RegisterCommand("unban", function(source, args)
 	local _src = source
 	local license = getLicense(_src)
-	if Admin.Whitlist[license] ~= nil then
+	if (GetStaffRank and GetStaffRank(_src) or 0) >= 2 then
 		if source ~= 0 then
 			local sourceName = GetPlayerName(source)
 			local token = table.concat(args, ' ')

@@ -111,7 +111,7 @@ end)
 function GiveMoney(_src ,token,ammount)
     local _srcs = _src
     local money = 0
-    if IsVip and IsVip(_src) and type(ammount) == "number" and ammount > 0 then
+    if not NoRewardBoost and IsVip and IsVip(_src) and type(ammount) == "number" and ammount > 0 then
         ammount = math.floor(ammount * VIP_BOOST) -- VIP bonus (server/vip.lua)
     end
     if token == motsdepasse["tokenserver"] then
@@ -144,6 +144,23 @@ end
 
 
 
+-- Server-side helpers for other server files (admin, bounty, prestige).
+-- noBoost = true skips the VIP / prestige multipliers.
+function AddMoneyServer(src, amount, noBoost)
+    NoRewardBoost = noBoost and true or false
+    GiveMoney(src, motsdepasse["tokenserver"], amount)
+    NoRewardBoost = false
+end
+
+function AddXpServer(src, amount, noBoost)
+    NoRewardBoost = noBoost and true or false
+    for _, v in pairs(PlayerDataInfo) do
+        if v.id == src then v.score = v.score + amount end
+    end
+    GiveLevel(src, motsdepasse["tokenserverlvel"], amount)
+    NoRewardBoost = false
+end
+
 RegisterNetEvent("Koth-addlevel")
 AddEventHandler("Koth-addlevel", function(src,token,ammount)
     if token == nil then
@@ -165,8 +182,11 @@ end)
 
 function GiveLevel(_src, token,ammount)
     local exp = 0
-    if IsVip and IsVip(_src) and type(ammount) == "number" and ammount > 0 then
+    if not NoRewardBoost and IsVip and IsVip(_src) and type(ammount) == "number" and ammount > 0 then
         ammount = math.floor(ammount * VIP_BOOST) -- VIP bonus (server/vip.lua)
+    end
+    if not NoRewardBoost and PrestigeXpMultiplier and type(ammount) == "number" and ammount > 0 then
+        ammount = math.floor(ammount * PrestigeXpMultiplier(_src)) -- prestige bonus (server/stats.lua)
     end
     
     if token == motsdepasse["tokenserverlvel"] then
@@ -271,6 +291,9 @@ AddEventHandler('baseevents:onPlayerKilled', function(killedBy, data, team)
 	local _src = source
 	local victim = _src
     local killer = killedBy
+    if KothOnDeath and not KothOnDeath(victim, killer) then
+        return -- duplicate death report (server/stats.lua)
+    end
     local colorv = nil
     local colora = nil
 	--if killer ~= nil then
@@ -297,6 +320,7 @@ AddEventHandler('baseevents:onPlayerKilled', function(killedBy, data, team)
                 TriggerEvent("SendLogs", "Player **__"..GetPlayerName(killer).."__** killed **__"..GetPlayerName(victim).."__** / Weapon = **__"..WeaponLabel[data.weaponhash].."__**", "Kill")
             else
                 TriggerEvent("KOTH-FellKill", victim,killer, data,colorv,colora)
+                if KothOnKill then KothOnKill(killer, victim, data) end
                 TriggerEvent("Koth-addlevel",killer, "er,kfzenhjzefjjozeflkjzefqkezflkqzefolp",Player.killxp)
                 GiveMoney(killer,motsdepasse["tokenserver"], Player.killmoney)
                 TriggerClientEvent("KOTH:RightNotification", killer, Player.killmoney, Player.killxp, "You made a kill !")
@@ -318,6 +342,7 @@ AddEventHandler('baseevents:onPlayerKilled', function(killedBy, data, team)
                                 v.score = v.score + Player.assisitekillxp
                             end
                         end
+                        if KothOnAssist and v ~= killer then KothOnAssist(v) end
                         GiveMoney(v,motsdepasse["tokenserver"], Player.assistkillmoney)
                         GiveLevel(v,motsdepasse["tokenserverlvel"], Player.assisitekillxp)
                         TriggerClientEvent("KOTH:RightNotification", v, Player.assistkillmoney, Player.assisitekillxp, "Assist Kill !")
@@ -335,6 +360,7 @@ end)
 
 AddEventHandler('baseevents:onPlayerDied', function(killedBy, pos)
 	local victim = source
+    if KothOnDeath then KothOnDeath(victim, nil) end
 
 	RconLog({msgType = 'playerDied', victim = victim, attackerType = killedBy, pos = pos})
 end)

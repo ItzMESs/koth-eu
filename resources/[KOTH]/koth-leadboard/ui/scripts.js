@@ -45,7 +45,7 @@ function render(players, selfId) {
         list.forEach(p => {
             html += `<div class="row${p.id == selfId ? ' self' : ''}">
                 <span class="c-uid">${esc(p.id)}</span>
-                <span class="c-name">${p.vip ? '<i class="fas fa-crown vip" title="VIP"></i>' : ''}${esc(p.name)}</span>
+                <span class="c-name">${p.prestige ? `<span class="pmark" title="Prestige ${p.prestige}">${p.prestige}</span>` : ''}${p.vip ? '<i class="fas fa-crown vip" title="VIP"></i>' : ''}${esc(p.name)}</span>
                 <span class="c-num">${n(p.score)}</span>
                 <span class="c-num">${n(p.kill)}</span>
                 <span class="c-num">${n(p.death)}</span>

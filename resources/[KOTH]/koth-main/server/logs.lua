@@ -16,10 +16,14 @@ local webhooks = {
     ["Kill"] = {w = ""},
     ["staffmod"] = {w = ""},
     ["rent"] = {w = ""},
+    ["report"] = {w = ""},
+    ["admin"] = {w = ""},
 }
 
 function SendLog(msg, type)
-    local webhook = webhooks[type].w
+    local entry = webhooks[type]
+    local webhook = entry and entry.w
+    if not webhook or webhook == "" or webhook == "X" then return end -- no webhook set
 
     PerformHttpRequest(webhook, function(err, text, headers) end, 'POST', json.encode({username = type, content = msg, avatar_url = img, tts = false}), { ['Content-Type'] = 'application/json' })
 end

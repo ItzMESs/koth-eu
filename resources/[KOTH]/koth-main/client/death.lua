@@ -1,3 +1,8 @@
+-- (used to live in client/killstreak/killstreak.lua)
+KillByPed = 0
+IsPlayerDead1 = false
+IsPlayerDead2 = false
+
 local timer = 0
 local pressTimer = 0
 isDead = false
@@ -50,6 +55,7 @@ local sec = 60000*5
 
 Citizen.CreateThread(function()
     local hasBeenDead = false
+    local deathReported = false
     local diedAt
     local interval = 1
     while true do
@@ -154,12 +160,15 @@ Citizen.CreateThread(function()
 
                 ShowDeathScreen(killerPlayerIdx, killerid, killerweapon, killerinvehicle, killervehiclename, killdist, headshot)
 
-                if killer == ped or killer == -1 then
+                if deathReported then
+                    -- already reported this death (the loop runs every ~1s while dead)
+                elseif killer == ped or killer == -1 then
+                    deathReported = true
                     TriggerEvent('baseevents:onPlayerDied', killertype, { table.unpack(GetEntityCoords(ped)) })
                     TriggerServerEvent('baseevents:onPlayerDied', killertype, { table.unpack(GetEntityCoords(ped)) })
                     hasBeenDead = true
                 else
-
+                    deathReported = true
                     TriggerServerEvent('baseevents:onPlayerKilled', killerid, {
                         hipfire = attacker_hipfire, 
                         killersharedveh = killersharedveh, 
@@ -182,6 +191,7 @@ Citizen.CreateThread(function()
             elseif not IsPedFatallyInjured(ped) then
                 --isDead = false
                 diedAt = nil
+                deathReported = false
             end
             -- check if the player has to respawn in order to trigger an event
             if not hasBeenDead and diedAt ~= nil and diedAt > 0 then

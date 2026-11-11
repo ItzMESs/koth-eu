@@ -1,9 +1,8 @@
 <!DOCTYPE html>
 <html>
-    <head>
+<head>
+    <meta charset="utf-8">
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.1/css/all.css" integrity="sha384-vp86vTRFVJgpjF9jiIGPEEqYqlDwgyBgEF109VFjmqGmIY/Y4HV4d3Gp2irVfcrp" crossorigin="anonymous">
-    <script src="https://code.jquery.com/jquery-3.4.1.min.js"
-    integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
     <script src="./jquery.min.js"></script>
     <link rel="stylesheet" href="style.css">
     <script defer src="script.js"></script>
@@ -11,7 +10,21 @@
 
 <body>
     <div id="wrapper" class="wrapper">
-        <div class="view" id="view"></div>
+        <div class="view" id="view">
+            <header class="shop-header">
+                <h1 id="shopTitle">Shop</h1>
+                <div class="wallet" id="wallet">$ 0</div>
+                <div class="actions">
+                    <button id="closebtn" title="Close"><i class="fas fa-times"></i></button>
+                </div>
+            </header>
+
+            <nav class="tabs" id="tabs"></nav>
+
+            <div class="list" id="list"></div>
+
+            <div class="toast" id="toast"></div>
+        </div>
     </div>
 </body>
 </html>

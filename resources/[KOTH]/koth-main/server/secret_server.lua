@@ -334,18 +334,21 @@ AddEventHandler('baseevents:onPlayerKilled', function(killedBy, data, team)
 
                 if not assists[victim] then assists[victim] = {} end
 
-                for i,v in pairs(assists[victim]) do
-                    if v ~= attacker and v ~= victim then
-                        for k,v in pairs(PlayerDataInfo) do
-                            if v.id == v then
-                                v.assist = v.assist + Player.assist
-                                v.score = v.score + Player.assisitekillxp
+                -- assists: everyone who damaged the victim in the last 15s, except the
+                -- killer and the victim; each player counted once
+                local credited = {}
+                for _, helper in pairs(assists[victim]) do
+                    if helper ~= killer and helper ~= victim and not credited[helper] and GetPlayerName(helper) then
+                        credited[helper] = true
+                        for _, info in pairs(PlayerDataInfo) do
+                            if info.id == helper then
+                                info.assist = info.assist + Player.assist
                             end
                         end
-                        if KothOnAssist and v ~= killer then KothOnAssist(v) end
-                        GiveMoney(v,motsdepasse["tokenserver"], Player.assistkillmoney)
-                        GiveLevel(v,motsdepasse["tokenserverlvel"], Player.assisitekillxp)
-                        TriggerClientEvent("KOTH:RightNotification", v, Player.assistkillmoney, Player.assisitekillxp, "Assist Kill !")
+                        if KothOnAssist then KothOnAssist(helper) end
+                        GiveMoney(helper,motsdepasse["tokenserver"], Player.assistkillmoney)
+                        TriggerEvent("Koth-addlevel", helper, motsdepasse["tokenserverlvel"], Player.assisitekillxp) -- XP + scoreboard score
+                        TriggerClientEvent("KOTH:RightNotification", helper, Player.assistkillmoney, Player.assisitekillxp, "Assist Kill !")
                     end
                 end
                 assists[victim] = {}

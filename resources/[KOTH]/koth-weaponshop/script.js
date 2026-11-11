@@ -264,6 +264,13 @@ window.addEventListener('message', e => {
           item.innerHTML = `<div class='itemlayer'><p><i class='fas fa-lock'></i><br>Level ${el.lvl}</p></div>`
         };
 
+        // Name + price label on unlocked items
+        if (lvl >= el.lvl) {
+          let isOwned = owned.some(o => o.id == el.id);
+          let price = (el.rent && el.rent != "free") ? `$${el.rent}` : "Free";
+          item.innerHTML = `<div class="item-label"><span>${el.name}</span>${isOwned ? '<span class="item-owned">Owned</span>' : `<span class="item-price">${price}</span>`}</div>`;
+        };
+
         if (data.type == "weapon") {
           // Branchement des items
           if ( el.wrap == 'primary') primary.appendChild(item);
@@ -289,6 +296,10 @@ window.addEventListener('message', e => {
   
           // Block l'achat
           if (lvl < el.lvl) return;
+
+          // Highlight selected item
+          document.querySelectorAll('div.item.selected').forEach(i => i.classList.remove('selected'));
+          item.classList.add('selected');
   
           // Création du thumb
           let img = document.createElement('div');

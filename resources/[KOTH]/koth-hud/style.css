@@ -1,549 +1,450 @@
-@import url('https://fonts.googleapis.com/css2?family=Roboto&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Inter:wght@400;600&display=swap');
+
+/* ==========================================================
+   KOTH HUD — "Tactical" theme
+   Same element IDs as before, so script.js keeps working.
+   ========================================================== */
+
+:root {
+  --panel: rgba(12, 14, 18, 0.72);
+  --panel-2: rgba(255, 255, 255, 0.06);
+  --line: rgba(255, 255, 255, 0.10);
+  --text: #eef1f5;
+  --muted: #9aa3ae;
+  --accent: #f5b83d;
+  --red: #ef4444;
+  --blue: #3b82f6;
+  --green: #22c55e;
+  --hp: #e5484d;
+  --xp: #f5b83d;
+  --cut: 10px;
+}
 
 * {
-  font-family: 'Roboto', sans-serif;
+  font-family: 'Rajdhani', 'Inter', sans-serif;
   margin: 0;
   padding: 0;
+  box-sizing: border-box;
   user-select: none;
   text-decoration: none;
   list-style: none;
   outline: none;
 }
 
-/* Base */
 html, body {
   height: 100%;
   overflow: hidden;
-}
-
-body {
-  background-repeat: no-repeat;
-  object-fit: cover;
-  background-position: center;
-  background-size: 100%;
+  background: transparent;
 }
 
 .hud {
   display: flex;
   flex-direction: column;
   height: 100vh;
+  color: var(--text);
 }
+
+/* ---------- Team score bar (top center) ---------- */
 
 .hud .teams {
   position: relative;
   display: flex;
   justify-content: center;
+  gap: 10px;
   width: 100%;
+  margin-top: 22px;
 }
 
-.hud .teams .red span, .blue span, .green span {
-  margin: 5px;
-}
-
-.hud .teams .red, .blue, .green {
+.hud .teams > div {
+  position: relative;
   display: flex;
   align-items: center;
-  justify-content: space-around;
-  height: 25px;
-  width: auto;
-  border-radius: 10px;
-  padding: 0.2rem;
-  margin: 40px 10px;
-  color: white;
-
-  box-shadow: 1px -1px 27px 5px rgba(0,0,0,0.42);
-  -webkit-box-shadow: 1px -1px 27px 5px rgba(0,0,0,0.42);
-  -moz-box-shadow: 1px -1px 27px 5px rgba(0,0,0,0.42);
+  gap: 16px;
+  height: 38px;
+  padding: 0 16px 0 18px;
+  background: var(--panel);
+  color: var(--text);
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: .5px;
+  clip-path: polygon(var(--cut) 0, 100% 0, calc(100% - var(--cut)) 100%, 0 100%);
+  backdrop-filter: blur(6px);
 }
 
-.hud .teams .red {
-  background-color: #e03e36;
+.hud .teams > div::before {
+  content: "";
+  position: absolute;
+  left: 0; right: 0; bottom: 0;
+  height: 3px;
+}
+.hud .teams > div::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  opacity: .16;
+  pointer-events: none;
 }
 
-.hud .teams .blue {
-  background-color: #368ee0;
+.hud .teams .red::before,  .hud .teams .red::after  { background: var(--red); }
+.hud .teams .blue::before, .hud .teams .blue::after { background: var(--blue); }
+.hud .teams .green::before,.hud .teams .green::after{ background: var(--green); }
+
+.hud .teams span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
 }
 
-.hud .teams .green {
-  background-color: #21cc46;
+.hud .teams i { font-size: 13px; opacity: .75; }
+.hud .teams .red i   { color: #fca5a5; }
+.hud .teams .blue i  { color: #93c5fd; }
+.hud .teams .green i { color: #86efac; }
+
+/* the point counter is the headline number */
+.hud .teams #redpoint, .hud .teams #bluepoint, .hud .teams #greenpoint {
+  font-size: 22px;
 }
+
+/* ---------- Bottom container ---------- */
 
 div.bag {
   position: absolute;
-  display: flex;
-  justify-content: center;
-  flex-direction: column;
   height: 250px;
   width: 100%;
-  margin: 0 auto;
   bottom: 0;
-  color: white;
+  color: var(--text);
 }
+
+/* ---------- Player card (bottom left) ---------- */
+
+div.player {
+  position: absolute;
+  left: 40px;
+  bottom: 74px;
+  width: 320px;
+  height: 58px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 18px;
+  background: var(--panel);
+  border-left: 3px solid var(--accent);
+  clip-path: polygon(0 0, 100% 0, 100% calc(100% - var(--cut)), calc(100% - var(--cut)) 100%, 0 100%);
+  backdrop-filter: blur(6px);
+}
+
+div.player .name {
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: .5px;
+  text-transform: uppercase;
+  max-width: 180px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+div.player .money {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 20px;
+  font-weight: 700;
+  color: #4ade80;
+}
+div.player .money i { color: #4ade80 !important; font-size: 15px; }
+div.player .money #money::before { content: "$"; margin-right: 1px; }
+
+/* ---------- XP bar ---------- */
+
+div.xp-bar {
+  position: absolute;
+  left: 40px;
+  bottom: 40px;
+  width: 320px;
+  height: 26px;
+  background: var(--panel);
+  overflow: hidden;
+  clip-path: polygon(0 0, 100% 0, calc(100% - 8px) 100%, 0 100%);
+}
+
+div.xp-bar #mana {
+  display: block;
+  height: 100%;
+  width: 40%;
+  background: linear-gradient(90deg, #c98a17, var(--xp));
+  box-shadow: 0 0 12px rgba(245, 184, 61, .45);
+  transition: width 400ms ease;
+}
+div.xp-bar #mana br { display: none; }
+
+div.xp-bar .lvl {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 8px;
+  z-index: 2;
+}
+
+div.xp-bar .lvl span {
+  min-width: 26px;
+  height: 18px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 5px;
+  font-size: 13px;
+  font-weight: 700;
+  background: rgba(0, 0, 0, .55);
+  border: 1px solid var(--line);
+}
+div.xp-bar .lvl #from::before, div.xp-bar .lvl #to::before {
+  content: "LV ";
+  font-size: 10px;
+  margin-right: 2px;
+  opacity: .7;
+}
+
+div.xp-bar .granted {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 700;
+  text-shadow: 0 1px 2px #000;
+  z-index: 2;
+}
+div.xp-bar .granted span { margin: 0 4px; }
+
+/* ---------- Equipped weapon (bottom right) ---------- */
 
 .equipedWepon {
-  position: absolute; 
-  background-color: rgba(0, 0, 0, 0.70);
-  padding: 1rem;
-  height: 50px;
-  width: 270px;
-  right: 50px;
-  border-radius: 8px;
-  transform: skewY(4deg);
-
-  box-shadow: 1px -1px 27px 5px rgba(0, 0, 0, 0.20);
+  position: absolute;
+  right: 40px;
+  bottom: 58px;
+  width: 330px;
+  height: 92px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 18px;
+  background: var(--panel);
+  border-right: 3px solid var(--accent);
+  clip-path: polygon(var(--cut) 0, 100% 0, 100% 100%, 0 100%, 0 var(--cut));
+  backdrop-filter: blur(6px);
 }
 
-.weapon1.remove, .weapon2.remove, .weapon3.remove {
-  animation: 500ms reverse weapon ease-in forwards;
-}
-
-.equipedWepon.get {
-  animation: 500ms equiped ease-in forwards;
-}
-
-/* .equipedWepon {
-  position: absolute; 
-  background-color: rgba(0, 0, 0, 0.70);
-  padding: 1rem;
-  height: 50px;
-  width: 155px;
-  max-width: 270px;
-  right: 50px;
-  border-radius: 8px;
-  transform: skewY(4deg);
-
-  box-shadow: 1px -1px 27px 5px rgba(0, 0, 0, 0.20);
-} */
-
-@keyframes get {
-  0% {
-    width: 155px;
-  }
-  100% {
-    width: 270px;
-  }
-}
-
-.bind {
-  font-size: 15px;
-}
-
-.anim {
-  animation: get 3s forwards;
-}
-
-div.bag .equipedWepon img {
-  width: 100%;
-}
+.equipedWepon.get { animation: 350ms slideUp ease-out forwards; }
 
 div.bag .weapon {
   position: relative;
   display: flex;
+  align-items: center;
   justify-content: center;
-  background-color: #424242;
-  padding: 1rem;
-  height: 50px;
-  border-radius: 8px;
-  left: 2px;
-
-  box-shadow: 1px -1px 27px 5px rgba(0,0,0,0.42);
-  -webkit-box-shadow: 1px -1px 27px 5px rgba(0,0,0,0.42);
-  -moz-box-shadow: 1px -1px 27px 5px rgba(0,0,0,0.42);
-
-  transition: all 300ms ease-in;
+  width: 170px;
+  height: 100%;
+  background: none;
+  padding: 0;
 }
-
-div.bag div.reload {
-  position: absolute;
-  flex-direction: column;
-  left: 20px;
-  bottom: 95px;
-  border-radius: 8px;
-  background-color: #303030;
-  overflow: hidden;
-
-  box-shadow: 1px -1px 27px 5px rgba(0,0,0,0.42);
-  -webkit-box-shadow: 1px -1px 27px 5px rgba(0,0,0,0.42);
-  -moz-box-shadow: 1px -1px 27px 5px rgba(0,0,0,0.42);
-
-  transition: all 300ms ease-in;
-}
-
-div.bag div.reload span {
-  height: 10px;
-  border-radius: 8px;
-  background-color: #4658b0;
-
-  animation: 2s reload;
-}
-.wow {
-  animation: 3s weapon;
-}
-
-.change {
-  animation: get 5s reverse;
-}
-
-div.bag .weapon1 {
-  position: absolute;
-  align-items: center;
-  justify-content: space-between;
-  background-color: rgba(0,0,0,0.70);
-  padding: 1rem;
-  height: 20px;
-  width: 80px;
-  right: 50px;
-  bottom: 180px;
-  border-radius: 8px;
-  transform: skewY(4deg);
-
-  box-shadow: 1px -1px 27px 5px rgba(0,0,0,0.20);
-
-  animation: 500ms weapon ease-in forwards;
-}
-
-div.bag .weapon1 img {
-  height: 150%;
-}
-
-div.bag .weapon2 {
-  position: absolute;
-  align-items: center;
-  justify-content: space-between;
-  background-color: rgba(0,0,0,0.70);
-  padding: 1rem;
-  height: 20px;
-  width: 80px;
-  right: 50px;
-  bottom: 240px;
-  border-radius: 8px;
-  transform: skewY(4deg);
-
-  box-shadow: 1px -1px 27px 5px rgba(0,0,0,0.20);
-
-  animation: 500ms weapon ease-in forwards;
-}
-
-div.bag .weapon2 img {
-  height: 150%;
-}
-
-div.bag .weapon3 {
-  position: absolute;
-  align-items: center;
-  justify-content: space-between;
-  background-color: rgba(0,0,0,0.70);
-  padding: 1rem;
-  height: 20px;
-  width: 80px;
-  right: 50px;
-  bottom: 300px;
-  border-radius: 8px;
-  transform: skewY(4deg);
-
-  box-shadow: 1px -1px 27px 5px rgba(0,0,0,0.20);
-
-    animation: 500ms weapon ease-in forwards;
-}
-
-div.bag .weapon3 img {
-  height: 150%;
-}
-
-.large {
-  width: 120px;
+div.bag .equipedWepon .weapon img {
+  max-width: 100%;
+  max-height: 60px;
+  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, .6));
 }
 
 div.bag .equipedWepon .ammo {
   display: flex;
   align-items: center;
-  justify-content: center;
-  width: 50%;
+  justify-content: flex-end;
+  gap: 6px;
+  width: auto;
 }
-
-div.bag .equipedWepon .ammo img {
-  width: 25%;
-}
-
 div.bag .equipedWepon .ammo span:nth-child(1) {
-  font-size: 35px;
-  margin: 5px;
+  font-size: 46px;
+  font-weight: 700;
+  line-height: 1;
+  margin: 0;
+  font-variant-numeric: tabular-nums;
 }
+div.bag .equipedWepon .ammo img { width: 26px; opacity: .8; }
 
-div.player {
-  background-color: rgba(0,0,0,0.70);
-
-  overflow: hidden;
-
+/* reload progress — thin bar on top edge of the weapon card */
+div.bag div.reload {
   position: absolute;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  flex-wrap: nowrap;
-
-  width: 255px;
-  height: 50px;
-
-  padding: 0.5rem;
-
-  border-radius: 10px;
-
-  font-size: 24px;
-
-  left: 30px;
-  bottom: 250px;
-
-  overflow: hidden;
+  left: 0;
+  right: 0;
+  top: 0;
+  width: auto;
+  height: 3px;
+  background: transparent;
 }
-
-#xpright {
-  bottom: 47vh;
-  left: 350px;
-  text-align: left;
-}
-
-#xpcenter {
-  top: 41%;
-  left: 27%;
-  text-align: left;
-  transform: translate(110px, -50px);
-}
-
-div.xp-bar {
-  background-color: rgba(0,0,0,0.70);
-
-  overflow: hidden;
-  position: absolute;
-  display: flex;
-
-  width: 270px;
-  height: 24px;
-
-  left: 30px;
-  bottom: 220px;
-
-  border-radius: 8px;
-
-  box-shadow: 1px -1px 27px 5px rgba(0,0,0,0.20);
-}
-
-div.xp-bar .lvl {
-  position: absolute;
-  display: flex;
-  width: 95%;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0.3rem;
-  top: -3px;
-}
-
-div.xp-bar .granted {
-  position: absolute;
-
-  display: flex;
-  justify-content: center;
-  
-  top: 3px;
-
-  width: 100%;
-}
-
-div.xp-bar .granted span {
-  margin-right: 5px;
-}
-
-div.xp-bar #mana {
-  background-color: #349beb;
-
-  width: 40%;
+div.bag div.reload span {
+  display: none;
   height: 100%;
-
-  border-radius: 8px;
-
-  box-shadow: 1px -1px 27px 5px rgba(0,0,0,0.20);
+  background: var(--accent);
+  box-shadow: 0 0 10px var(--accent);
+  animation: 2s reload linear;
 }
 
-div.utils {
-  background-color: rgba(0,0,0,0.70);
+/* ---------- Weapon slots 1 / 2 / 3 ---------- */
+
+div.bag .weapon1, div.bag .weapon2, div.bag .weapon3 {
   position: absolute;
-  display: flex;
-  flex-direction: column;
-  height: 170px;
-  width: 70px;
-  left: 310px;
-  bottom: 20px;
-  padding: 0.5rem;
-  border-radius: 8px;
-
-  box-shadow: 1px -1px 27px 5px rgba(0,0,0,0.20);
-}
-
-div.utils .item {
-  display: flex;
+  bottom: 158px;
+  width: 104px;
+  height: 46px;
+  display: none;
   align-items: center;
   justify-content: center;
-  height: 30px;
-  padding: 0.5rem;
-  background-color: #424242;
-  border-radius: 10px;
-  margin: 5px 0;
+  padding: 6px 10px 6px 22px;
+  background: var(--panel);
+  border-top: 2px solid rgba(255, 255, 255, .18);
+  animation: 350ms slideUp ease-out forwards;
+}
+div.bag .weapon1 { right: 266px; }
+div.bag .weapon2 { right: 153px; }
+div.bag .weapon3 { right: 40px; }
 
-  box-shadow: 1px -1px 27px 5px rgba(0,0,0,0.42);
-  -webkit-box-shadow: 1px -1px 27px 5px rgba(0,0,0,0.42);
-  -moz-box-shadow: 1px -1px 27px 5px rgba(0,0,0,0.42);
+div.bag .weapon1::before, div.bag .weapon2::before, div.bag .weapon3::before {
+  position: absolute;
+  top: 4px;
+  left: 7px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--accent);
+}
+div.bag .weapon1::before { content: "1"; }
+div.bag .weapon2::before { content: "2"; }
+div.bag .weapon3::before { content: "3"; }
+
+div.bag .weapon1 img, div.bag .weapon2 img, div.bag .weapon3 img {
+  max-width: 100%;
+  max-height: 30px;
+  opacity: .85;
+}
+.bind { display: none; }
+
+.weapon1.remove, .weapon2.remove, .weapon3.remove {
+  animation: 300ms reverse slideUp ease-in forwards;
 }
 
-div.utils .item img {
-  margin-left: 10px;
-  width: 60%;
-}
+/* ---------- Health ---------- */
 
 div.bag div.life {
   position: absolute;
-  display: flex;
-  flex-direction: column;
-  width: 120px;
-  right: 50px;
-  bottom: 50px;
-  border-radius: 8px;
-  background-color: #303030;
-  transform: skewY(4deg);
-  overflow: hidden;
-
-  box-shadow: 1px -1px 27px 5px rgba(0,0,0,0.42);
-  -webkit-box-shadow: 1px -1px 27px 5px rgba(0,0,0,0.42);
-  -moz-box-shadow: 1px -1px 27px 5px rgba(0,0,0,0.42);
-}
-
-div.bag div.life span {
-  max-width: 100%;
-  min-width: 0px;
+  right: 40px;
+  bottom: 40px;
+  width: 330px;
   height: 10px;
-  border-radius: 8px;
-  background-color: #b04646;
-
-  transition: all 300ms ease-in;
+  background: rgba(0, 0, 0, .6);
+  border: 1px solid var(--line);
+  overflow: hidden;
 }
+div.bag div.life span {
+  display: block;
+  height: 100%;
+  max-width: 100%;
+  min-width: 0;
+  background: linear-gradient(90deg, #b91c1c, var(--hp));
+  box-shadow: 0 0 10px rgba(229, 72, 77, .6);
+  transition: width 300ms ease-out;
+}
+
+/* ---------- Kill feed (top right) ---------- */
 
 div.killevent {
   position: absolute;
-  top: 20px;
-  right: 20px;
-
+  top: 22px;
+  right: 22px;
   display: flex;
-  align-items: center;
   flex-direction: column;
-
-  height: 300px;
-  width: 300px;
+  align-items: flex-end;
+  gap: 6px;
+  width: 380px;
 }
 
 div.event {
-  background-color: rgba(0, 0, 0, 0.42);
-
   display: flex;
   align-items: center;
-  /* justify-content: space-around; */
-  font-weight: 600;
-
-  padding: 0.8rem;
-
-  height: 20px;
-  width: auto;
-  max-width: 300px;
-
-  border-radius: 10px;
-
-  color: white;
-  margin: 5px;
+  gap: 10px;
+  height: 34px;
+  padding: 0 14px;
+  max-width: 380px;
+  background: var(--panel);
+  border-right: 3px solid var(--accent);
+  color: var(--text);
+  font-size: 17px;
+  font-weight: 700;
+  margin: 0;
+  animation: 250ms feedIn ease-out;
 }
 
 span#killer, span#killed {
-  width: 380%;
+  width: auto;
+  max-width: 130px;
   overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 
-span#killed {
-  text-align: right;
-}
+span#killer.red, span#killed.red       { color: #f87171; }
+span#killer.greeen, span#killed.greeen { color: #4ade80; }
+span#killer.bluee, span#killed.bluee   { color: #60a5fa; }
 
-span#killer.red, span#killed.red {
-  color: #e03e36;
+div.event .weapon { display: flex; align-items: center; justify-content: center; }
+div.event .weapon img {
+  height: 20px;
+  width: auto;
+  margin: 0;
+  transform: rotateY(180deg);
+  opacity: .9;
 }
+div.event .weapon img#headshot { height: 18px; margin-left: 4px; }
 
-span#killer.greeen, span#killed.greeen {
-  color: #21cc46;
-}
-
-span#killer.bluee, span#killed.bluee {
-  color: #369ce0;
-}
+/* ---------- XP / money popups ---------- */
 
 div.newxp {
   position: fixed;
-  background-color: transparent;
-  font-family: 'Open Sans', sans-serif;
-  text-shadow: 2px 2px #000;
+  background: transparent;
+  text-shadow: 0 2px 6px rgba(0, 0, 0, .8);
 }
+#xpright { bottom: 160px; left: 40px; text-align: left; }
+#xpcenter { top: 38%; left: 50%; transform: translateX(-50%); text-align: center; }
 
 div.newxp h1 {
-  margin-top: 0px;
-  margin-bottom: 0px;
-  font-size: 30px;
-  color: #39b425;
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: .5px;
+  color: #4ade80;
 }
 div.newxp h2 {
-  margin-top: 0px;
-  margin-bottom: 0px;
-  font-size: 25px;
-  color:lightgray;
-  margin-left: 15px;
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--xp);
+  margin: 0;
 }
 
-div.event .weapon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
+/* ---------- Animations ---------- */
 
-div.event .weapon img {
-  width: 75%;
-  transform: rotateY(180deg);
-  margin-left: -20px;
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
-
-div.event .weapon img#headshot {
-  width: 23%;
-  margin-left: -10px;
+@keyframes feedIn {
+  from { opacity: 0; transform: translateX(20px); }
+  to   { opacity: 1; transform: translateX(0); }
 }
-
-@keyframes weapon {
-  0% {
-    right: -150px;
-  }
-  100% {
-    right: 50px;
-  }
-}
-
 @keyframes reload {
-  0% {
-    width: 0px;
-  }
-  100% {
-    width: 100%;
-  }
+  from { width: 0; }
+  to   { width: 100%; }
 }
 
+/* 4K screens */
 @media screen and (min-width: 3840px) {
-  div.newxp h1 {
-    font-size: 40px;
-  }
-  div.newxp h2 {
-    font-size: 36px;
-  }
-  #xpright {
-    right: 2vw;
-  }
+  .hud { zoom: 1.8; }
 }

@@ -1,401 +1,444 @@
-@import url('https://fonts.googleapis.com/css2?family=Roboto&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Inter:wght@400;500;600&display=swap');
+
+/* ==========================================================
+   KOTH Weapon / Vehicle shop — "Tactical" theme
+   Same classes/IDs as before, so script.js keeps working.
+   ========================================================== */
+
+:root {
+  --bg: rgba(10, 12, 16, 0.88);
+  --panel: #14171d;
+  --panel-2: #1b1f27;
+  --line: rgba(255, 255, 255, 0.08);
+  --text: #eef1f5;
+  --muted: #8b95a1;
+  --accent: #f5b83d;
+  --accent-ink: #1a1305;
+  --ok: #22c55e;
+  --danger: #ef4444;
+}
 
 * {
-  font-family: 'Roboto', sans-serif;
+  font-family: 'Inter', sans-serif;
   margin: 0;
   padding: 0;
+  box-sizing: border-box;
   user-select: none;
   text-decoration: none;
   list-style: none;
   outline: none;
 }
 
+html, body { height: 100%; background: transparent; }
+
 button {
-  background-color: transparent;
+  background: transparent;
   border: none;
-  color: white;
+  color: var(--text);
   cursor: pointer;
-  transition: all 300ms ease;
-}
-button:hover {
-  transform: scale(1.1);
+  transition: color 150ms ease, background 150ms ease;
 }
 
-/* Base */
-html, body {
-  height: 100%;
-}
+/* ---------- Window ---------- */
+
 .wrapper {
   display: flex;
   align-items: center;
+  justify-content: center;
   width: 100%;
   height: 100%;
 }
+
 .wrapper div.view {
   position: relative;
   display: none;
   flex-direction: column;
-  background-color: rgba(49, 49, 49, 0.65);
-  color: white;
-  height: 700px;
-  width: 1370px;
-  border-top-left-radius: 30px;
-  border-bottom-left-radius: 30px;
-  margin: 0 5%;
+  width: 1400px;
+  max-width: 94vw;
+  height: 760px;
+  max-height: 90vh;
+  padding: 0 380px 24px 0;
+  background: var(--bg);
+  color: var(--text);
+  border: 1px solid var(--line);
+  border-top: 3px solid var(--accent);
+  box-shadow: 0 30px 80px rgba(0, 0, 0, .55);
+  backdrop-filter: blur(10px);
+  overflow: hidden;
 }
-.wrapper div.view header {
+
+/* ---------- Header ---------- */
+
+.wrapper div.view > header {
+  order: -1;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: 1rem;
-  width: 96.5%;
+  justify-content: flex-start;
+  width: 100%;
+  height: 76px;
+  padding: 0 28px;
+  border-bottom: 1px solid var(--line);
 }
+
 .wrapper div.view header div.title {
   display: flex;
   align-items: center;
-  padding-left: 10px;
+  gap: 4px;
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 30px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+.wrapper div.view header div.title p {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 30px;
+}
+.wrapper div.view header div.title p::after { content: "Armory"; }
+.wrapper div.view header div.title p i {
+  width: 38px;
+  height: 38px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 17px;
+  color: var(--accent-ink);
+  background: var(--accent);
+  clip-path: polygon(6px 0, 100% 0, calc(100% - 6px) 100%, 0 100%);
+}
+.wrapper div.view header div.title span {
+  color: var(--muted);
+  font-weight: 600;
+  margin-left: 6px;
 }
 
-.wrapper div.view header div.title p {
-  font-size: 40px;
-  margin-right: 15px;
+#closebtn, #back {
+  width: 42px;
+  height: 42px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  background: var(--panel-2);
+  border: 1px solid var(--line);
 }
-.wrapper div.view div.classes {
-  display: flex;
-  padding: 1rem;
-  height: 95.5%;
-  width: 97.5%;
-}
-.wrapper div.view section.shop {
-  position: absolute;
-  top: 0;
-  left: 1350px;
-  background-color: #303030;
-  display: flex;
-  flex-direction: column;
-  padding: 1rem;
-  height: 95.5%;
-  width: 350px;
-  border-radius: 20px;
-  z-index: 2;
- 
-  transition: all 300ms ease-in-out;
-}
-#closebtn {
-  font-size: 40px;
-  font-weight: 300;
-  top: 10px;
-  right: 25px;
-}
+#closebtn { margin-left: auto; }
+#closebtn:hover { background: var(--danger); }
+#back { order: -1; margin-right: 14px; }
+#back:hover { background: var(--accent); color: var(--accent-ink); }
+#back i { padding: 0; }
+
+
 #errordiv {
   pointer-events: none;
   text-align: center;
-  margin: 0px;
-  font-weight: 400;
-  color: lightgray;
+  color: var(--muted);
 }
-/* End Base */
 
-/* Home */
-div.home {
+/* ---------- Class picker ---------- */
+
+.wrapper div.view div.classes {
   display: flex;
+  gap: 14px;
+  flex: 1;
+  width: 100%;
+  height: auto;
+  padding: 24px 20px 0 28px;
+}
+
+div.class, div.class-locked,
+div.class#Ground, div.class#Air,
+div.class-locked#Ground, div.class-locked#Air {
+  position: relative;
+  flex: 1;
+  width: auto;
+  height: 100%;
+  margin: 0;
+  float: none;
+  background-size: cover;
+  background-position: center top;
+  border: 1px solid var(--line);
+  overflow: hidden;
+  cursor: pointer;
+  transition: transform 200ms ease, border-color 200ms ease, filter 200ms ease;
+  clip-path: polygon(0 0, 100% 0, 100% calc(100% - 16px), calc(100% - 16px) 100%, 0 100%);
+}
+
+div.class:hover {
+  transform: translateY(-4px);
+  border-color: var(--accent);
+}
+div.class-locked { cursor: not-allowed; filter: grayscale(1) brightness(.55); }
+
+.layer {
+  display: flex;
+  align-items: flex-end;
   width: 100%;
   height: 100%;
-  padding: 1rem;
-}
-div.classes {
-  height: 100%;
-}
-div.class {
-  float: left;
-  width: 250px;
-  height: 100%;
-  background-size: cover;
-  background-position: center;
-  text-align: center;
-  font-weight: 400;
-  font-size: 30px;
-  border-radius: 20px;
-  transition-duration: 0.5s;
-  margin-left: 10px;
-  overflow: hidden;
-}
-div.class-locked {
-  float: left;
-  width: 250px;
-  height: 100%;
-  background-size: cover;
-  background-position: center;
-  text-align: center;
-  font-weight: 400;
-  font-size: 30px;
-  border-radius: 20px;
-  transition-duration: 0.5s;
-  margin-left: 10px;
-  overflow: hidden;
-}
-div.class#Ground, div.class#Air {
-  float: left;
-  width: 50%;
-  height: 100%;
-  background-size: cover;
-  background-position: center;
-  text-align: center;
-  font-weight: 400;
-  font-size: 30px;
-  border-radius: 20px;
-  transition-duration: 0.5s;
-  margin-left: 10px;
-  overflow: hidden;
-}
-div.class-locked#Ground, div.class-locked#Air {
-  float: left;
-  width: 50%;
-  height: 100%;
-  background-size: cover;
-  background-position: center;
-  text-align: center;
-  font-weight: 400;
-  font-size: 30px;
-  border-radius: 20px;
-  transition-duration: 0.5s;
-  margin-left: 10px;
-  overflow: hidden;
-}
-.class:hover {
-  transform: scale(0.95);
+  padding: 0 0 22px 20px;
+  background: linear-gradient(180deg, transparent 45%, rgba(0, 0, 0, .9) 100%);
+  transition: background 200ms ease;
 }
 .class:hover .layer {
-  background: transparent;
-  transform: scale(0.95);
+  background: linear-gradient(180deg, transparent 35%, rgba(245, 184, 61, .35) 100%);
+  transform: none;
 }
-.layer {
-  /* background-color: rgba(0, 0, 0, 0.65); */
-  width: 100%;
-  height: 100%;
-  padding-top: 20px;
-  border-radius: 20px;
-
-  transition-duration: 0.4s;
+.layer p {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 30px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  text-align: left;
+  line-height: 1.05;
 }
 .layer.disabled {
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  background: rgba(0, 0, 0, .55);
+}
+.layer.disabled p { text-align: center; font-size: 22px; color: var(--text); }
+.layer.disabled p i { font-size: 30px; margin-bottom: 6px; color: var(--accent); }
+
+/* ---------- Item grid ---------- */
+
+div.itemwrapper {
+  flex: 1;
+  width: 100%;
+  padding: 20px 20px 0 28px;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+div.primary, div.secondary, div.throwable {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 12px;
+  margin-bottom: 26px;
+}
+
+div.itemwrapper div.primary > header,
+div.itemwrapper div.secondary > header,
+div.itemwrapper div.throwable > header {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  height: auto;
+  padding: 0;
+  border: none;
+}
+div.itemwrapper header h2 {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+div.itemwrapper header::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--line);
+}
+
+/* vehicle list has no sub-sections */
+div.itemwrapper > div.item, div.itemwrapper > div.item-lock {
+  display: inline-flex;
+  width: 180px;
+  margin: 0 12px 12px 0;
+  vertical-align: top;
+}
+
+div.item, div.item-lock {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  width: auto;
+  height: 160px;
+  margin: 0;
+  padding: 0;
+  float: none;
+  background-color: #e9ebee;
+  background-position: center;
+  background-size: cover;
+  border: 2px solid transparent;
+  overflow: hidden;
+  cursor: pointer;
+  transition: border-color 150ms ease, transform 150ms ease;
+}
+div.item:hover { border-color: var(--accent); transform: translateY(-2px); }
+div.item.selected { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent), 0 0 24px rgba(245, 184, 61, .3); }
+
+/* name / price label added by script.js */
+div.item .item-label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  padding: 6px 10px;
+  background: rgba(10, 12, 16, .88);
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .5px;
+}
+div.item .item-label span:first-child {
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+div.item .item-label .item-price, div.item .item-label .item-owned { flex-shrink: 0; }
+div.item .item-label .item-price { color: var(--ok); font-size: 14px; }
+div.item .item-label .item-owned { color: var(--accent); font-size: 12px; }
+
+div.item-lock { cursor: not-allowed; }
+.itemlayer {
+  position: absolute;
+  inset: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: rgba(0, 0, 0, 0.65);
-}
-#back {
-  font-size: 40px;
-  font-weight: 300;
-  width: auto;
-}
-#back i {
-  padding-right: 15px;
-}
-#back:hover {
-  transform: scale(1.2);
-}
-/* End Home */
-
-/* Items */
-div.itemwrapper {
-  width: 100%;
-  bottom: 0px;
-  top: 130px;
-  margin: auto;
-  overflow-x: hidden;
-  overflow-y: scroll;
-  border-radius: 30px;
-}
-div.primary, .secondary, .throwable {
-  display: flex;
-  flex-wrap: wrap;
-  height: auto;
-  width: 100%;
-  margin-bottom: 20px;
-}
-div.item {
-  background-position: center;
-  background-size: cover;
-  float: left;
-  margin: 15px;
-  width: 150px;
-  height: 150px;
-  border-radius: 10px;
-  font-size: 20px;
-  padding-left: 10;
-  border-radius: 20px;
-  transition: all 300ms ease-in;
-}
-div.item-lock {
-  background-position: center;
-  background-size: cover;
-  float: left;
-  margin: 15px;
-  width: 150px;
-  height: 150px;
-  border-radius: 10px;
-  font-size: 20px;
-  padding-left: 10;
-  border-radius: 20px;
-  transition: all 300ms ease-in;
-}
-div.item:hover {
-  transform: scale(1.1);
-}
-.itemlayer {
-  display: flex;
-  align-items: center;
-  background-color: rgba(0, 0, 0, 0.75);
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  transition-duration: 0.4s;
+  background: rgba(10, 12, 16, .82);
   text-align: center;
-  border-radius: 20px;
 }
 div.itemlayer p {
-  margin: 0px;
-  top: 25%;
-  width: 100%;
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 18px;
   font-weight: 700;
+  text-transform: uppercase;
+  color: var(--muted);
 }
-div.itemlayer i {
-  font-size: 50px;
+div.itemlayer i { font-size: 26px; color: var(--accent); margin-bottom: 4px; }
+
+div.itemwrapper::-webkit-scrollbar { width: 8px; }
+div.itemwrapper::-webkit-scrollbar-track { background: transparent; }
+div.itemwrapper::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, .15); }
+
+/* ---------- Right side detail / cart panel ---------- */
+
+.wrapper div.view section.shop {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: auto;
+  width: 380px;
+  height: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 24px;
+  background: var(--panel);
+  border-left: 1px solid var(--line);
+  border-radius: 0;
+  overflow-y: auto;
+  z-index: 2;
 }
 
-div.itemspacer {
-  clear: both;
-  font-size: 20px;
-  margin-left: 10px;
-  font-weight: 400px;
-}
-div.itemwrapper::-webkit-scrollbar-track {
-  border-radius: 10px;
-  background-color: rgba(100, 100, 100, 0.0);
-
-}
-div.itemwrapper::-webkit-scrollbar {
-  width: 12px;
-  background-color: rgba(100, 100, 100, 0.0);
-  border-radius: 5px;
-}
-div.itemwrapper::-webkit-scrollbar-thumb {
-  background-color: rgba(83, 82, 82);
-  border-radius: 5px;
-}
-/* End Items */
-
-/* Shop */
 #logo {
-  min-height: 500px;
+  flex: 1;
+  min-height: 0;
   background-position: center;
+  background-repeat: no-repeat;
+  background-size: 90% auto;
+  opacity: .9;
 }
+
+div.detail_img {
+  min-height: 240px;
+  background-color: #e9ebee;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: cover;
+  border: 1px solid var(--line);
+}
+
+div.detailHolder { width: 100%; }
+
+p.itemname {
+  margin: 6px 0 0;
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 34px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  text-shadow: none;
+}
+p.itemtagline {
+  margin: 0 0 6px;
+  color: var(--muted);
+  font-size: 14px;
+  text-shadow: none;
+}
+p.itemtagline:empty { display: none; }
+
+#info {
+  min-height: 0;
+  color: var(--accent);
+  font-size: 14px;
+  font-weight: 600;
+}
+#info:empty { display: none; }
+
+div.purchasebutton, div.permbutton {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 20px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .5px;
+  background: var(--panel-2);
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--accent);
+  cursor: pointer;
+  transition: background 150ms ease, color 150ms ease;
+}
+div.purchasebutton:hover {
+  background: var(--accent);
+  color: var(--accent-ink);
+}
+div.purchasebutton:hover p.price { color: var(--accent-ink); }
+
+p.type { float: none; margin: 0; font-weight: 700; }
+p.price { margin: 0; color: var(--ok); text-align: right; font-weight: 700; }
+p.options { font-size: 20px; margin: 4px 0; }
+
+/* loadout panel (death screen) */
 section.shop div#primary, div#secondary,
 div#throwable, div#special, div#buyall {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 1rem;
-  border-radius: 20px;
-  background-color: #474747;
-  margin-top: 10px;
+  padding: 10px;
+  background: var(--panel-2);
+  border: 1px solid var(--line);
+  margin: 0;
 }
 section.shop div#primary button, div#secondary button,
 div#throwable button, div#special button, div#buyall button {
-  background-color: #c7ad26;
-  padding: 0.8rem;
-  width: 80px;
-  border-radius: 10px;
-
-  text-shadow: -4px 4px 9px rgba(150, 150, 150, 1);
+  padding: 10px 14px;
+  min-width: 80px;
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--accent-ink);
+  background: var(--accent);
+  text-shadow: none;
 }
 section.shop div#primary div.item, div#secondary div.item,
 div#throwable div.item, div#special div.item {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 20px;
-  height: 140px;
-  width: 150px;
-  background-color: grey;
-  margin: 5px;
-  background-position: center;
+  width: 140px;
+  height: 90px;
 }
-div.details {
-  background-color: rgba(0,0,0,0.75);
-  color: white;
-  font-family: 'Open Sans', sans-serif;
-  border-radius: 10px;
-  top: 150px;
-  bottom: 250px;
-  width: 300px;
-  min-height: 500px;
-  overflow: hidden;
-}
-div.detail_img {
-  background-repeat: no-repeat;
-  background-position: center;
-  background-size: cover;
-  min-height: 350px;
-  border-radius: 20px;
-  overflow: hidden;
-}
-div.detailHolder {
-  left: 0;
-  top: 0;
-  width: 100%;
-  height: 100%;
-
-}
-p.itemname {
-  margin: 25px;
-  font-size: 35px;
-  text-shadow: 4px 4px 4px #000;
-  font-weight: 400;
-}
-p.itemtagline {
-  margin: 12px;
-  color: #fff;
-  text-shadow: 2px 2px 2px #000;
-  font-weight: 400;
-}
-p.options {
-  font-size: 25px;
-  margin: 5px;
-}
-p.type {
-  font-weight: 600;
-  float: left;
-  margin: 0px;
-}
-p.price {
-  color: green;
-  margin: 0px;
-  text-align: right;
-}
-div.purchasebutton {
-  font-size: 24px;
-  padding: 15px;
-  transition-duration: 0.5s;
-}
-div.purchasebutton:hover {
-  background-color: white;
-  color: black;
-  transition-duration: 0.5s;
-}
-div.permbutton {
-  font-size: 24px;
-  padding: 15px;
-  transition-duration: 0.5s;
-}
-div.confirmbutton:hover {
-  background-color: darkgreen;
-  transition-duration: 0.5s;
-}
-div.cancelbutton:hover {
-  background-color: darkred;
-  transition-duration: 0.5s;
-}
-/* End Shop */

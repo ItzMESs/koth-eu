@@ -26,6 +26,6 @@ AddEventHandler("chatMessage", function(src, name, message)
 
     TriggerClientEvent("chat:addMessage", -1, {
         templateId = "koth",
-        args = { tostring(id), rankOf(src), GetPlayerName(src) or name, message, tostring(teamOf(src)), tostring(prestige) },
+        args = { tostring(id), rankOf(src), GetPlayerName(src) or name, message, tostring(teamOf(src)), tostring(prestige), GetChatTag and GetChatTag(src) or "" },
     })
 end)

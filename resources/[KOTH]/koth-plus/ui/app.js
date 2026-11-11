@@ -9,7 +9,7 @@ const TEAM = { 1: ['OPFOR', 't-r'], 2: ['BLUFOR', 't-b'], 3: ['INDFOR', 't-g'] }
 const teamTag = (t) => TEAM[t] ? `<span class="${TEAM[t][1]}">${TEAM[t][0]}</span>` : '<span class="muted">—</span>';
 const roman = (n) => ['', 'I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X'][n] || String(n);
 const hours = (sec) => Math.floor((Number(sec) || 0) / 3600) + 'h';
-const PANELS = ['admin', 'report', 'career', 'ks'];
+const PANELS = ['admin', 'report', 'career', 'ks', 'cosmetics'];
 
 function showPanel(id) {
     PANELS.forEach(p => $(p).classList.toggle('hidden', p !== id));
@@ -129,9 +129,10 @@ function adminDetail() {
             ${b('goto', 'fa-location-arrow', 'Goto')}${b('bring', 'fa-magnet', 'Bring')}${b('spectate', 'fa-eye', 'Spectate')}${b('freeze', 'fa-snowflake', 'Freeze')}
             ${b('revive', 'fa-heart', 'Revive')}${b('slay', 'fa-skull', 'Slay')}${b('vip', 'fa-crown', i.vip ? 'Remove VIP' : 'Set VIP')}
             <span class="btn ${perms.money ? '' : 'off'}" data-act="money"><i class="fas fa-dollar-sign"></i>Give money</span>
+            <span class="btn ${perms.coins ? '' : 'off'}" data-act="coins"><i class="fas fa-coins"></i>Give coins</span>
         </div>
         <div class="form" style="margin-top:8px">
-            <label class="field"><small>AMOUNT ($)</small><input id="amt" type="number" min="1" value="1000"></label>
+            <label class="field"><small>AMOUNT ($ / COINS)</small><input id="amt" type="number" min="1" value="1000"></label>
             <label class="field"><small>DURATION (BAN)</small><select id="dur"><option value="1">1 hour</option><option value="24">1 day</option><option value="72">3 days</option><option value="168">7 days</option><option value="0" selected>Permanent</option></select></label>
         </div>
         <div class="sec">Punish</div>
@@ -149,7 +150,7 @@ function adminDetail() {
             adminAct(act, i.id, { reason: reason || 'No reason', hours: Number($('dur').value) });
             return;
         }
-        if (act === 'money') return adminAct('money', i.id, { amount: Number($('amt').value) });
+        if (act === 'money' || act === 'coins') return adminAct(act, i.id, { amount: Number($('amt').value) });
         adminAct(act, i.id, {});
         if (act === 'vip') setTimeout(() => post('admin', { action: 'info', target: i.id }), 600);
     });
@@ -325,6 +326,45 @@ function careerRender() {
     };
 }
 
+/* ================= COSMETICS ================= */
+const Cos = { s: null, tab: 'hats', open: false };
+function cosOpen(s) { Cos.s = s; Cos.open = true; showPanel('cosmetics'); cosRender(); }
+function cosRender() {
+    const s = Cos.s, root = $('cosmetics');
+    const tabs = [['hats', 'Hats'], ['tags', 'Chat Tags']];
+    root.innerHTML = hdr('fa-tshirt', 'var(--blue2)', 'MN Network Cosmetic Shop', `Earn coins: +${s.coinsPerKill} per kill, +${s.coinsPerWin} per win · F6`,
+        `<div class="tabs">${tabs.map(([id, l]) => `<span data-t="${id}" class="${Cos.tab === id ? 'on' : ''}">${l}</span>`).join('')}</div>
+         <span class="pill" style="margin-left:auto;background:rgba(34,197,94,.14);color:#4ade80;font-size:12px"><i class="fas fa-coins"></i> ${fmt(s.coins)}</span>`) +
+        `<div class="cbody"><div class="cosgrid scroll" id="cosGrid"></div></div>`;
+    bindClose(root);
+    root.querySelectorAll('[data-t]').forEach(t => t.onclick = () => { Cos.tab = t.dataset.t; cosRender(); });
+
+    const isHat = Cos.tab === 'hats';
+    const list = isHat ? s.hats : s.tags;
+    const kind = isHat ? 'hat' : 'tag';
+    const current = isHat ? s.hat : s.tag;
+    const none = `<div class="cositem ${current ? '' : 'on'}" data-equip="${kind}:none"><div class="cosico"><i class="fas fa-ban"></i></div>
+        <div class="cosname">${isHat ? 'No hat' : 'No tag'}</div><div class="cosact">${current ? '<span class="btn">EQUIP</span>' : '<span class="eq"><i class="fas fa-check"></i> EQUIPPED</span>'}</div></div>`;
+    $('cosGrid').innerHTML = none + list.map(it => {
+        const key = `${kind}:${it.id}`, owned = s.owned && s.owned[key], on = current === it.id;
+        const locked = it.vip && !s.vip;
+        const ico = isHat ? `<div class="cosico"><i class="fas ${esc(it.icon || 'fa-hat-cowboy')}"></i></div>`
+                          : `<div class="cosico flag"><img src="https://flagcdn.com/w80/${esc(it.id)}.png" onerror="this.remove()"></div>`;
+        let act;
+        if (locked && !owned) act = `<span class="lockmsg"><i class="fas fa-lock"></i> VIP only</span>`;
+        else if (on) act = `<span class="eq"><i class="fas fa-check"></i> EQUIPPED</span>`;
+        else if (owned) act = `<span class="btn" data-equip="${key}">EQUIP</span>`;
+        else act = `<div class="buy ${s.coins < it.price ? 'poor' : ''}" data-buy="${key}"><span><i class="fas fa-coins"></i> ${fmt(it.price)}</span><small>PURCHASE</small></div>`;
+        return `<div class="cositem ${on ? 'on' : ''} ${locked && !owned ? 'lock' : ''}">${ico}<div class="cosname">${esc(it.label)}${it.vip ? ' <span class="pill" style="background:rgba(250,204,21,.14);color:var(--gold)">VIP</span>' : ''}</div><div class="cosact">${act}</div></div>`;
+    }).join('');
+    $('cosGrid').querySelectorAll('[data-buy]').forEach(b => b.onclick = () => {
+        if (b.classList.contains('poor')) return toast('Not enough coins.', 'error');
+        if (b.dataset.armed !== '1') { b.dataset.armed = '1'; b.querySelector('small').textContent = 'CLICK TO CONFIRM'; return; }
+        post('cosBuy', { key: b.dataset.buy });
+    });
+    $('cosGrid').querySelectorAll('[data-equip]').forEach(b => b.onclick = () => post('cosEquip', { key: b.dataset.equip }));
+}
+
 /* ================= KILLSTREAKS ================= */
 const KS = { s: null, pick: [] };
 function ksOpen(s) { KS.s = s; KS.pick = [...(s.selected || [])]; showPanel('ks'); ksRender(); }
@@ -449,5 +489,6 @@ window.addEventListener('message', (e) => {
         case 'announce': announce(d); break;
         case 'bigmsg': bigmsg(d); break;
         case 'end': endShow(d); break;
+        case 'cosmetics': if (m.action === 'open') cosOpen(d); else if (m.action === 'state') { Cos.s = d; if (!$('cosmetics').classList.contains('hidden')) cosRender(); } break;
     }
 });

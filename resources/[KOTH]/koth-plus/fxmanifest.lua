@@ -11,6 +11,7 @@ client_scripts {
     'client/main.lua',
     'client/admin.lua',
     'client/report.lua',
+    'client/cosmetics.lua',
     'client/career.lua',
     'client/bounty.lua',
     'client/killstreak.lua',

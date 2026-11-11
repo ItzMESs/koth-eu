@@ -11,7 +11,7 @@ local RANK_LABEL = { [1] = "Moderator", [2] = "Admin", [3] = "Founder" }
 -- minimum rank for each action
 local PERM = {
     staffmode = 1, ["goto"] = 1, bring = 1, spectate = 1, freeze = 1, revive = 1, slay = 1, kick = 1,
-    reports = 1, announce = 1, ban = 2, unban = 2, money = 3, vip = 3, mapvote = 2,
+    reports = 1, announce = 1, ban = 2, unban = 2, money = 3, coins = 3, vip = 3, mapvote = 2,
 }
 
 local REPORT_COOLDOWN = 60    -- seconds between reports per player
@@ -190,6 +190,11 @@ AddEventHandler("KOTH-Admin:Action", function(action, target, args)
         if amount <= 0 or amount > 1000000 then return notify(src, "Invalid amount.", "error") end
         AddMoneyServer(target, amount, true)
         notify(target, ("You received $%s from staff."):format(amount), "success")
+    elseif action == "coins" then
+        local amount = math.floor(tonumber(args.amount) or 0)
+        if amount <= 0 or amount > 100000 then return notify(src, "Invalid amount.", "error") end
+        if AddCoins then AddCoins(target, amount) end
+        notify(target, ("You received %d coins from staff."):format(amount), "success")
     elseif action == "vip" then
         if SetVip then SetVip(src, target, not (IsVip and IsVip(target))) end
     elseif action == "announce" then

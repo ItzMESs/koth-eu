@@ -237,6 +237,7 @@ function KothOnKill(killer, victim, data)
         p.w[weapon] = (p.w[weapon] or 0) + 1
     end
 
+    if CosmeticsOnKill then CosmeticsOnKill(killer) end
     Streak[killer] = (Streak[killer] or 0) + 1
     local s = Streak[killer]
     if p and s > (p.best or 0) then p.best = s end

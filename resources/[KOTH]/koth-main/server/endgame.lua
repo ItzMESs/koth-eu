@@ -29,6 +29,7 @@ function EndGameScreen(winnerTeam, seconds)
 
             if AddMoneyServer then AddMoneyServer(id, money, true) end
             if AddXpServer then AddXpServer(id, xp, true) end
+            if CosmeticsOnMatchEnd then CosmeticsOnMatchEnd(id, win) end
 
             -- camera fly-over + fireworks (client/end.lua)
             TriggerClientEvent("KothEndMatch", id, win, TEAM_LABEL[winnerTeam] or "")

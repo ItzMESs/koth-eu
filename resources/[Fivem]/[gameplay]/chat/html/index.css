@@ -174,3 +174,6 @@ textarea:focus, input:focus {
 .kmsg .kname { flex-shrink: 0; font-weight: 700; }
 .kmsg .ktext { word-break: break-word; }
 .kmsg.sys .kname { color: #facc15; }
+.kmsg .kflag { flex-shrink: 0; align-self: center; display: inline-flex; }
+.kmsg .kflag img { height: 1.45vh; border-radius: 2px; box-shadow: 0 0 0 1px rgba(0,0,0,.4); }
+.kmsg .kflag.f { display: none; }

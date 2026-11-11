@@ -69,11 +69,6 @@ AddEventHandler("KOTH-Plus:KillstreakGo", function(id)
         SetEntityHealth(ped, GetEntityMaxHealth(ped))
         local _, w = GetCurrentPedWeapon(ped, true)
         if w and w ~= GetHashKey("WEAPON_UNARMED") then AddAmmoToPed(ped, w, 250) end
-        TriggerEvent("KOTH-AC:AllowArmour", 600) -- koth-main anti-cheat
-        SetPedArmour(ped, math.max(GetPedArmour(ped), 50))
-    elseif id == "armor" then
-        TriggerEvent("KOTH-AC:AllowArmour", 600) -- koth-main anti-cheat
-        SetPedArmour(ped, 100)
     elseif id == "airstrike" or id == "precision" or id == "cluster" then
         local target = Plus.RayFromCamera(500.0)
         if not target then

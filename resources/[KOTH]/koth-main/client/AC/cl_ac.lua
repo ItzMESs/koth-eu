@@ -1,9 +1,3 @@
--- Armour given by a killstreak (koth-plus) is allowed for a while
-ArmourAllowedUntil = 0
-AddEventHandler("KOTH-AC:AllowArmour", function(seconds)
-    ArmourAllowedUntil = GetGameTimer() + (tonumber(seconds) or 0) * 1000
-end)
-
 Passe = nil
 RegisterNetEvent("AddServerClienCode")
 AddEventHandler("AddServerClienCode", function(code)
@@ -103,7 +97,7 @@ Citizen.CreateThread(function()
             end
         end
         
-        if armour >= 1 and GetGameTimer() > ArmourAllowedUntil then
+        if armour >= 1 then
             checked = checked + 1
             if checked >= 5 then
                 --print("Ban")

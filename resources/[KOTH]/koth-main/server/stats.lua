@@ -19,13 +19,12 @@ PRESTIGE_MONEY      = 25000
 KILLSTREAKS = {
     { id = "uav",       label = "UAV",              kills = 3,  icon = "fa-satellite-dish", text = "Shows all enemies on your team's map for 30 seconds." },
     { id = "supply",    label = "Supply drop",      kills = 4,  icon = "fa-medkit",         text = "Full health and a big ammo refill." },
-    { id = "armor",     label = "Armor",            kills = 5,  icon = "fa-shield-alt",     text = "Full body armour." },
     { id = "airstrike", label = "Airstrike",        kills = 6,  icon = "fa-bomb",           text = "Aim at a spot: 3 explosions hit it after 5 seconds." },
     { id = "precision", label = "Precision strike", kills = 7,  icon = "fa-crosshairs",     text = "One heavy missile on the spot you aim at." },
     { id = "cluster",   label = "Cluster strike",   kills = 10, icon = "fa-fire",           text = "6 explosions over a wide area.", prestige = 2 },
 }
 KILLSTREAK_SLOTS = 3
-KILLSTREAK_DEFAULT = { "uav", "armor", "airstrike" }
+KILLSTREAK_DEFAULT = { "uav", "supply", "airstrike" }
 
 -- ---------- state ----------
 local P = {}            -- [src] = { license, name, joined, prestige, ks = {}, d = {deltas}, w = {weapon deltas} }

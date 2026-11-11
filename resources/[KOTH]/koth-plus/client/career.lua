@@ -18,6 +18,14 @@ AddEventHandler("KOTH-Plus:Career", function(data)
     Plus.Open("career", data)
 end)
 
+RegisterNUICallback("banner", function(data, cb)
+    TriggerServerEvent("KOTH-Plus:SetBanner", data.id)
+    cb("ok")
+end)
+
+RegisterNetEvent("KOTH-Plus:BannerSet")
+AddEventHandler("KOTH-Plus:BannerSet", function(id) Plus.Send("career", "banner", { id = id }) end)
+
 RegisterNUICallback("prestige", function(_, cb)
     TriggerServerEvent("KOTH-Plus:Prestige")
     cb("ok")

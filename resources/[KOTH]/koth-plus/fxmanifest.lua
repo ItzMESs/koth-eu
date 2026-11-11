@@ -20,4 +20,5 @@ files {
     'ui/index.html',
     'ui/style.css',
     'ui/app.js',
+    'ui/banners.js',
 }

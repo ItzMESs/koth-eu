@@ -56,10 +56,13 @@ Citizen.CreateThread(function()
         `bounties` int(11) NOT NULL DEFAULT 0,
         `prestige` int(11) NOT NULL DEFAULT 0,
         `killstreaks` varchar(128) DEFAULT NULL,
+        `banner` varchar(32) DEFAULT NULL,
         `created` int(11) NOT NULL DEFAULT 0,
         PRIMARY KEY (`license`),
         KEY `kills` (`kills`)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4]], {})
+    -- older installs: add the banner column
+    MySQL.Async.execute("ALTER TABLE `player_stats` ADD COLUMN IF NOT EXISTS `banner` varchar(32) DEFAULT NULL", {})
     MySQL.Async.execute([[CREATE TABLE IF NOT EXISTS `player_weapon_kills` (
         `license` varchar(64) NOT NULL,
         `weapon` varchar(64) NOT NULL,
@@ -115,10 +118,12 @@ local function loadPlayer(src)
     end)
     MySQL.Async.execute('INSERT IGNORE INTO player_stats (license, name, created) VALUES (@l, @n, @t)',
         { ['@l'] = license, ['@n'] = name, ['@t'] = os.time() }, function()
-        MySQL.Async.fetchAll('SELECT prestige, killstreaks FROM player_stats WHERE license = @l', { ['@l'] = license }, function(r)
+        MySQL.Async.fetchAll('SELECT prestige, killstreaks, banner, kills FROM player_stats WHERE license = @l', { ['@l'] = license }, function(r)
             if not P[src] then return end
             if r and r[1] then
                 P[src].prestige = tonumber(r[1].prestige) or 0
+                P[src].banner = BANNERS[r[1].banner] and r[1].banner or "recruit"
+                P[src].kills0 = tonumber(r[1].kills) or 0
                 if r[1].killstreaks and r[1].killstreaks ~= "" then
                     local list = {}
                     for id in string.gmatch(r[1].killstreaks, "[^,]+") do
@@ -370,8 +375,40 @@ Citizen.CreateThread(function()
         Wait(3000)
         for _, info in pairs(PlayerDataInfo or {}) do
             info.prestige = GetPrestige(info.id)
+            info.banner = GetBanner(info.id)
         end
     end
+end)
+
+-- ---------- banners (UI: koth-plus/ui/banners.js) ----------
+BANNERS = {
+    recruit = {}, desert = { level = 10 }, nightops = { level = 25 }, jungle = { level = 40 }, arctic = { level = 60 },
+    inferno = { kills = 1000 }, headhunter = { kills = 5000 }, gold = { vip = true }, neon = { prestige = 1 }, diamond = { prestige = 5 },
+}
+
+function GetBanner(src)
+    local p = P[tonumber(src)]
+    return p and p.banner or "recruit"
+end
+
+RegisterNetEvent("KOTH-Plus:SetBanner")
+AddEventHandler("KOTH-Plus:SetBanner", function(id)
+    local src = source
+    local p, rule = P[src], BANNERS[id]
+    if not p or not rule then return end
+    MySQL.Async.fetchAll('SELECT exp FROM player WHERE license1 = @l', { ['@l'] = p.license }, function(r)
+        local level = levelFromExp(r and r[1] and tonumber(r[1].exp) or 0)
+        local kills = (p.kills0 or 0) + p.d.kills
+        local ok = (not rule.level or level >= rule.level or p.prestige > 0)
+            and (not rule.kills or kills >= rule.kills)
+            and (not rule.prestige or p.prestige >= rule.prestige)
+            and (not rule.vip or (IsVip and IsVip(src)))
+        if not ok then return TriggerClientEvent("KOTH-Plus:Notify", src, "This banner is still locked.", "error") end
+        p.banner = id
+        MySQL.Async.execute('UPDATE player_stats SET banner = @b WHERE license = @l', { ['@b'] = id, ['@l'] = p.license })
+        TriggerClientEvent("KOTH-Plus:Notify", src, "Banner equipped!", "success")
+        TriggerClientEvent("KOTH-Plus:BannerSet", src, id)
+    end)
 end)
 
 -- ---------- career (/stats) ----------
@@ -402,6 +439,8 @@ AddEventHandler("KOTH-Plus:GetCareer", function()
                             prestigeMax = PRESTIGE_MAX,
                             prestigeBonus = PRESTIGE_XP_BONUS,
                             prestigeMoney = PRESTIGE_MONEY,
+                            banner = p.banner or "recruit",
+                            vip = IsVip and IsVip(src) or false,
                             killstreaks = KILLSTREAKS,
                         })
                     end)

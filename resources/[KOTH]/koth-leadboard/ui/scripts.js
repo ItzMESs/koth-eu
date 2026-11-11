@@ -87,6 +87,12 @@ function render(players, selfId) {
     set('meScore', n(me.score));
     set('meKd', kd(me.kill, me.death));
     set('meMoney', `$${n(me.money).toLocaleString('en-US')}`);
+    const bkey = `${me.banner}|${me.name}|${me.prestige}`;
+    const mb = document.getElementById('meBanner');
+    if (window.KothBanners && mb.dataset.k !== bkey) {
+        mb.dataset.k = bkey;
+        mb.innerHTML = window.KothBanners.render(me.banner, { name: me.name, sub: me.prestige ? `Prestige ${me.prestige}` : (team ? team.label : ''), height: 90 });
+    }
 }
 
 window.addEventListener('message', (e) => {

@@ -268,7 +268,7 @@ const wImg = (w) => { w = String(w || ''); return w.replace(/MK2$/, '_MK2').repl
 function careerOpen(d) { Car.d = d; Car.tab = d.tab || 'stats'; showPanel('career'); careerRender(); }
 function careerRender() {
     const d = Car.d, root = $('career'), me = d.me || {};
-    const tabs = [['stats', 'My stats'], ['top', 'Top players'], ['prestige', 'Prestige']];
+    const tabs = [['stats', 'My stats'], ['top', 'Top players'], ['banner', 'Banner'], ['prestige', 'Prestige']];
     root.style.borderTopColor = Car.tab === 'prestige' ? 'var(--purple)' : 'var(--blue)';
     root.innerHTML = hdr(Car.tab === 'prestige' ? 'fa-gem' : 'fa-chart-line', Car.tab === 'prestige' ? 'var(--purple)' : 'var(--blue2)', 'Career',
         `${esc(d.name)} · rank #${d.rank} · level ${d.level}${d.prestige ? ' · Prestige ' + roman(d.prestige) : ''}`,
@@ -277,6 +277,8 @@ function careerRender() {
     bindClose(root);
     root.querySelectorAll('[data-t]').forEach(t => t.onclick = () => { Car.tab = t.dataset.t; careerRender(); });
     const body = $('cbody');
+
+    if (Car.tab === 'banner') { careerBanners(body); return; }
 
     if (Car.tab === 'stats' || Car.tab === 'top') {
         const kd = me.deaths ? (me.kills / me.deaths).toFixed(2) : (me.kills || 0);
@@ -323,6 +325,31 @@ function careerRender() {
         if (!armed) { armed = true; $('presBtn').innerHTML = '<i class="fas fa-exclamation-triangle"></i>CLICK AGAIN TO CONFIRM'; return; }
         post('prestige');
     };
+}
+
+function bannerUnlocked(u) {
+    const d = Car.d, kills = (d.me && d.me.kills) || 0;
+    if (u.vip && !d.vip) return false;
+    if (u.prestige && d.prestige < u.prestige) return false;
+    if (u.level && d.level < u.level && !d.prestige) return false;
+    if (u.kills && kills < u.kills) return false;
+    return true;
+}
+function careerBanners(body) {
+    const d = Car.d, B = window.KothBanners;
+    body.innerHTML = `<div class="sec" style="margin-top:0">Your banner</div>
+        <div style="max-width:520px">${B.render(d.banner, { name: d.name, sub: `Level ${d.level}${d.prestige ? ' · Prestige ' + roman(d.prestige) : ''}`, height: 110 })}</div>
+        <div class="muted" style="font-size:12px;margin-top:6px">Shown on the scoreboard and to players you kill.</div>
+        <div class="sec">All banners</div>
+        <div class="bgrid">${B.list.map(b => {
+            const ok = bannerUnlocked(b.unlock), on = b.id === d.banner;
+            return `<div class="bitem ${on ? 'on' : ''} ${ok ? '' : 'lock'}" data-b="${b.id}">${B.render(b.id, { height: 70 })}
+                <div class="binfo"><b>${esc(b.name)}</b><span>${on ? '<span class="t-g"><i class="fas fa-check"></i> Equipped</span>' : ok ? 'Click to equip' : '<i class="fas fa-lock"></i> ' + B.unlockText(b.unlock)}</span></div></div>`;
+        }).join('')}</div>`;
+    body.querySelectorAll('[data-b]').forEach(el => el.onclick = () => {
+        if (el.classList.contains('lock') || el.dataset.b === d.banner) return;
+        post('banner', { id: el.dataset.b });
+    });
 }
 
 /* ================= KILLSTREAKS ================= */
@@ -438,7 +465,7 @@ window.addEventListener('message', (e) => {
             break;
         case 'report': if (m.action === 'open') reportOpen(d); break;
         case 'reportToast': reportToast(d); break;
-        case 'career': if (m.action === 'open') careerOpen(d); else if (m.action === 'close') showPanel(null); break;
+        case 'career': if (m.action === 'open') careerOpen(d); else if (m.action === 'close') showPanel(null); else if (m.action === 'banner' && Car.d) { Car.d.banner = d.id; careerRender(); } break;
         case 'ks': if (m.action === 'open') ksOpen(d); else if (m.action === 'hud') ksHud(d); break;
         case 'bounty':
             if (m.action === 'board') bountyBoard(d);

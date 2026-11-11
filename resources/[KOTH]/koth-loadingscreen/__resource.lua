@@ -7,7 +7,6 @@ files {
 
     'img/cursor.png',
     'img/logo.png',
-    'img/logonoel.png',
     'img/colorLayer.png',
     'img/unmute.png',
     'img/mute.png',

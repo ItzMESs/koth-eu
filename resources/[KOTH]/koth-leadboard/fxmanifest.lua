@@ -9,5 +9,5 @@ files {
   'ui/scoreboard.html',
   'ui/style.css',
   'ui/scripts.js',
-  "ui/logo.PNG"
+  "ui/logo.png"
 }

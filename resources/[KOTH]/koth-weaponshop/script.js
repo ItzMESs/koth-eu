@@ -1,36 +1,43 @@
 // KOTH weapon / vehicle shop
-// Tabs = classes (infantry, medic, … / Ground, Air), list = items of that class.
+// Weapon shop: "Select a class" screen -> "<Class> Class Shop" with
+//              Primary / Secondary / Throwable tabs.
+// Vehicle shop: Ground / Air tabs.
 // NUI callbacks are unchanged: selectClass, rent, buy, owned, close.
 
 const CLASSES = [
     // Weapon
-    { name: 'infantry',   label: 'Infantry',   lvl: 1,  cat: 'weapon' },
-    { name: 'medic',      label: 'Medic',      lvl: 7,  cat: 'weapon' },
-    { name: 'explosives', label: 'Explosives', lvl: 20, cat: 'weapon' },
-    { name: 'support',    label: 'Support',    lvl: 27, cat: 'weapon' },
-    { name: 'marksmamb',  label: 'Marksman',   lvl: 50, cat: 'weapon' },
+    { name: 'infantry',   label: 'Infantry',   lvl: 1,  cat: 'weapon', thumb: 'INFANTRY.PNG' },
+    { name: 'medic',      label: 'Medic',      lvl: 7,  cat: 'weapon', thumb: 'MEDIC.PNG' },
+    { name: 'explosives', label: 'Explosives', lvl: 20, cat: 'weapon', thumb: 'EXPLOSIVES.PNG' },
+    { name: 'support',    label: 'Support',    lvl: 27, cat: 'weapon', thumb: 'SUPPORT.PNG' },
+    { name: 'marksmamb',  label: 'Marksman',   lvl: 50, cat: 'weapon', thumb: 'MARKSMAMB.PNG' },
     // Vehicle
     { name: 'Ground', label: 'Ground', lvl: 1,  cat: 'vehicule' },
     { name: 'Air',    label: 'Air',    lvl: 15, cat: 'vehicule' },
 ];
 
 const SECTIONS = [
-    { wrap: 'primary',   label: 'Primary' },
-    { wrap: 'secondary', label: 'Secondary' },
-    { wrap: 'throwable', label: 'Throwable' },
+    { name: 'primary',   label: 'Primary' },
+    { name: 'secondary', label: 'Secondary' },
+    { name: 'throwable', label: 'Throwable' },
 ];
 
-const view  = document.getElementById('view');
-const tabs  = document.getElementById('tabs');
-const list  = document.getElementById('list');
-const toast = document.getElementById('toast');
+const TEAM_PREFIX = { redfor: 'R_', blufor: 'B_', independant: 'G_' };
+
+const view    = document.getElementById('view');
+const title   = document.getElementById('shopTitle');
+const tabs    = document.getElementById('tabs');
+const list    = document.getElementById('list');
+const classes = document.getElementById('classes');
+const toast   = document.getElementById('toast');
+const backbtn = document.getElementById('backbtn');
 
 let state = null;
 let toastTimer = null;
 
-const post = (name, body) => $.post(`https://koth-weaponshop/${name}`, JSON.stringify(body || {}));
-const num  = (v) => (v === undefined || v === null || v === '' || String(v).toLowerCase() === 'free') ? 0 : Number(v);
-const money = (v) => `$ ${Number(v || 0).toLocaleString('en-US')}`;
+const post  = (name, body) => $.post(`https://koth-weaponshop/${name}`, JSON.stringify(body || {}));
+const num   = (v) => (v === undefined || v === null || v === '' || String(v).toLowerCase() === 'free') ? 0 : Number(v);
+const money = (v) => `$${Number(v || 0).toLocaleString('en-US')}`;
 
 /* ---------------- open / close ---------------- */
 
@@ -40,22 +47,24 @@ window.addEventListener('message', (e) => {
     if (data.type !== 'weapon' && data.type !== 'vehicule') return;
 
     const player = (data.player && data.player[0]) || {};
-    const classes = CLASSES.filter(c => c.cat === data.type);
+    const lvl = Number(player.lvl) || 0;
+    const cls = CLASSES.filter(c => c.cat === data.type);
 
     state = {
         type: data.type,
-        lvl: Number(player.lvl) || 0,
+        team: data.team,
+        lvl,
         money: Number(player.money) || 0,
         items: (data.items || []).filter(i => i.cat === data.type),
         owned: new Set((data.owned || []).map(o => o.id)),
-        classes,
-        tab: (classes.find(c => Number(player.lvl) >= c.lvl) || classes[0]).name,
-        selectedClass: null,     // class actually sent to the client (selectClass)
-        taken: new Set(),        // items rented/taken since the class was selected
+        classes: cls,
+        screen: data.type === 'weapon' ? 'classes' : 'items',
+        cls: data.type === 'weapon' ? null : (cls.find(c => lvl >= c.lvl) || cls[0]).name,
+        tab: 'primary',
+        taken: new Set(),
         confirmBuy: null,
     };
 
-    document.getElementById('shopTitle').textContent = data.type === 'weapon' ? 'Weapon Shop' : 'Vehicle Shop';
     view.style.display = 'flex';
     render();
 });
@@ -71,47 +80,115 @@ function close() {
 }
 
 document.getElementById('closebtn').addEventListener('click', close);
-document.addEventListener('keyup', (e) => { if (e.key === 'Escape' && state) close(); });
+backbtn.addEventListener('click', () => {
+    if (!state) return;
+    state.screen = 'classes';
+    state.confirmBuy = null;
+    render();
+});
+document.addEventListener('keyup', (e) => {
+    if (e.key !== 'Escape' || !state) return;
+    if (state.type === 'weapon' && state.screen === 'items') backbtn.click();
+    else close();
+});
 
 /* ---------------- render ---------------- */
 
 function render() {
     document.getElementById('wallet').textContent = money(state.money);
-    renderTabs();
-    renderList();
+    view.classList.toggle('picker', state.screen === 'classes');
+    backbtn.style.display = (state.type === 'weapon' && state.screen === 'items') ? 'inline-flex' : 'none';
+
+    if (state.screen === 'classes') {
+        title.textContent = 'Select a class';
+        tabs.innerHTML = '';
+        list.innerHTML = '';
+        renderClasses();
+    } else {
+        classes.innerHTML = '';
+        if (state.type === 'weapon') {
+            const c = state.classes.find(c => c.name === state.cls);
+            title.textContent = `${c ? c.label : ''} Class Shop`;
+        } else {
+            title.textContent = 'Vehicle Shop';
+        }
+        renderTabs();
+        renderList();
+    }
 }
 
-function renderTabs() {
-    tabs.innerHTML = '';
+/* ----- class picker ----- */
+
+function renderClasses() {
+    const prefix = TEAM_PREFIX[state.team] || 'R_';
+    classes.innerHTML = '';
     state.classes.forEach(c => {
         const locked = state.lvl < c.lvl;
-        const b = document.createElement('button');
-        b.className = 'tab' + (c.name === state.tab ? ' active' : '') + (locked ? ' locked' : '');
-        b.innerHTML = locked ? `<i class="fas fa-lock"></i> ${c.label} <small>Lv ${c.lvl}</small>` : c.label;
-        if (!locked) b.addEventListener('click', () => { state.tab = c.name; state.confirmBuy = null; renderTabs(); renderList(); });
-        tabs.appendChild(b);
+        const card = document.createElement('div');
+        card.className = 'class-card' + (locked ? ' locked' : '');
+        card.style.backgroundImage = `url('content/class_images/${prefix}${c.thumb}')`;
+        card.innerHTML = `
+            <div class="class-head">
+                <div class="class-name">${c.label}</div>
+                <div class="class-sub">${locked ? `Unlock at level ${c.lvl}` : 'Unlocked'}</div>
+            </div>
+            <div class="class-icon"><i class="${locked ? 'fas fa-lock' : 'far fa-arrow-alt-circle-right'}"></i></div>`;
+        if (!locked) card.addEventListener('click', () => selectClass(c.name));
+        classes.appendChild(card);
     });
 }
 
-function renderList() {
-    list.innerHTML = '';
-    const items = state.items.filter(i => i.class === state.tab);
+function selectClass(name) {
+    // same as before: picking a class resets the loadout on the client
+    post('selectClass', { class: name });
+    state.cls = name;
+    state.taken = new Set();
+    state.confirmBuy = null;
+    state.screen = 'items';
+    const first = SECTIONS.find(s => state.items.some(i => i.class === name && i.wrap === s.name));
+    state.tab = first ? first.name : 'primary';
+    render();
+}
+
+/* ----- tabs ----- */
+
+function renderTabs() {
+    tabs.innerHTML = '';
 
     if (state.type === 'weapon') {
         SECTIONS.forEach(s => {
-            const group = items.filter(i => i.wrap === s.wrap);
-            if (!group.length) return;
-            const h = document.createElement('div');
-            h.className = 'section';
-            h.textContent = s.label;
-            list.appendChild(h);
-            group.forEach(i => list.appendChild(row(i)));
+            if (!state.items.some(i => i.class === state.cls && i.wrap === s.name)) return;
+            tabs.appendChild(tabButton(s.label, s.name === state.tab, false, () => { state.tab = s.name; }));
         });
     } else {
-        items.forEach(i => list.appendChild(row(i)));
+        state.classes.forEach(c => {
+            const locked = state.lvl < c.lvl;
+            const label = locked ? `<i class="fas fa-lock"></i> ${c.label} <small>Lv ${c.lvl}</small>` : c.label;
+            tabs.appendChild(tabButton(label, c.name === state.cls, locked, () => { state.cls = c.name; }));
+        });
     }
+}
 
-    if (!items.length) list.innerHTML = '<div class="empty">Nothing here yet</div>';
+function tabButton(label, active, locked, onClick) {
+    const b = document.createElement('button');
+    b.className = 'tab' + (active ? ' active' : '') + (locked ? ' locked' : '');
+    b.innerHTML = label;
+    if (!locked) b.addEventListener('click', () => { onClick(); state.confirmBuy = null; renderTabs(); renderList(); });
+    return b;
+}
+
+/* ----- item rows ----- */
+
+function renderList() {
+    list.innerHTML = '';
+    let items = state.items.filter(i => i.class === state.cls);
+    if (state.type === 'weapon') items = items.filter(i => i.wrap === state.tab);
+
+    if (!items.length) {
+        list.innerHTML = '<div class="empty">Nothing here yet</div>';
+        return;
+    }
+    items.forEach(i => list.appendChild(row(i)));
 }
 
 function row(item) {
@@ -121,10 +198,7 @@ function row(item) {
 
     const el = document.createElement('div');
     el.className = 'row' + (locked ? ' locked' : '');
-
-    const sub = locked
-        ? `Unlocked at Level ${item.lvl}`
-        : (item.desc || (owned ? 'Owned' : ''));
+    const sub = locked ? `Unlocked at Level ${item.lvl}` : (item.desc || '');
 
     el.innerHTML = `
         <div class="thumb" style="background-image:url('content/item_images/${item.thumb}')"></div>
@@ -138,65 +212,56 @@ function row(item) {
 
     if (locked) {
         price.innerHTML = '<i class="fas fa-lock lock"></i>';
-        return el;
-    }
-
-    if (taken) {
-        price.innerHTML = pill('<i class="fas fa-check"></i>', 'TAKEN', 'done');
-        return el;
-    }
-
-    if (owned) {
-        const p = pillEl('FREE', 'OWNED', 'owned');
-        p.addEventListener('click', () => take('owned', item, num(item.buy)));
-        price.appendChild(p);
-        return el;
-    }
-
-    // Buy (with confirm) — only when the item can be bought
-    if (item.buy) {
-        const confirming = state.confirmBuy === item.id;
-        const b = pillEl(confirming ? 'CONFIRM?' : money(item.buy), 'BUY', 'buy' + (confirming ? ' confirm' : ''));
-        b.addEventListener('click', (ev) => {
-            ev.stopPropagation();
-            if (!confirming) { state.confirmBuy = item.id; return renderList(); }
-            buy(item);
-        });
+    } else if (taken) {
+        price.appendChild(button('<i class="fas fa-check"></i> Taken', 'done'));
+    } else if (owned) {
+        const b = button('Spawn', 'spawn');
+        b.addEventListener('click', () => take('owned', item, 0));
         price.appendChild(b);
+    } else {
+        if (item.buy) {
+            const confirming = state.confirmBuy === item.id;
+            const b = pill(confirming ? 'Confirm?' : money(item.buy), 'PURCHASE', 'buy' + (confirming ? ' confirm' : ''));
+            b.addEventListener('click', () => {
+                if (!confirming) { state.confirmBuy = item.id; return renderList(); }
+                buy(item);
+            });
+            price.appendChild(b);
+        }
+        const rentPrice = num(item.rent);
+        const r = pill(rentPrice ? money(rentPrice) : 'Free', 'RENT', 'rent');
+        r.addEventListener('click', () => take('rent', item, rentPrice));
+        price.appendChild(r);
     }
-
-    const rentPrice = num(item.rent);
-    const r = pillEl(rentPrice ? money(rentPrice) : 'FREE', 'RENT', 'rent');
-    r.addEventListener('click', () => take('rent', item, rentPrice));
-    price.appendChild(r);
-
     return el;
 }
 
 function pill(top, bottom, cls) {
-    return `<div class="pill ${cls}"><span>${top}</span><small>${bottom}</small></div>`;
-}
-function pillEl(top, bottom, cls) {
     const d = document.createElement('div');
-    d.innerHTML = pill(top, bottom, cls);
-    return d.firstElementChild;
+    d.className = `pill ${cls}`;
+    d.innerHTML = `<span>${top}</span><small>${bottom}</small>`;
+    return d;
+}
+function button(html, cls) {
+    const d = document.createElement('div');
+    d.className = `btn ${cls}`;
+    d.innerHTML = html;
+    return d;
 }
 
 /* ---------------- actions ---------------- */
 
-function ensureClass() {
-    // selecting a class resets the loadout on the client, so only do it
-    // when the player actually takes something from a different class
-    if (state.selectedClass !== state.tab) {
-        state.selectedClass = state.tab;
-        state.taken = new Set();
-        post('selectClass', { class: state.tab });
+function ensureVehicleClass() {
+    // vehicle shop has no class screen; selectClass is harmless for Ground/Air
+    if (state.type === 'vehicule' && state.selectedClass !== state.cls) {
+        state.selectedClass = state.cls;
+        post('selectClass', { class: state.cls });
     }
 }
 
 function take(kind, item, price) {
     if (kind === 'rent' && state.money < price) return notify('Not enough money!', true);
-    ensureClass();
+    ensureVehicleClass();
 
     post(kind, { type: item.cat, item: item.id, price: kind === 'rent' ? item.rent : item.buy, class: item.wrap });
 

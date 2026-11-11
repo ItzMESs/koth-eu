@@ -15,6 +15,8 @@
   --accent: #22c55e;
   --accent-soft: rgba(34, 197, 94, 0.14);
   --danger: #ef4444;
+  --blue: #1d4ed8;
+  --blue-hover: #2563eb;
 }
 
 * {
@@ -86,7 +88,7 @@ button {
   border-radius: 3px;
 }
 .actions { margin-left: auto; display: flex; gap: 8px; }
-#closebtn {
+#closebtn, #backbtn {
   width: 18px;
   height: 18px;
   display: inline-flex;
@@ -99,6 +101,63 @@ button {
   transition: background 150ms, color 150ms;
 }
 #closebtn:hover { background: var(--danger); color: #fff; }
+#backbtn { display: none; color: var(--muted); border-color: var(--dim); }
+#backbtn:hover { background: #fff; color: #000; border-color: #fff; }
+
+/* ---------- Class picker ---------- */
+
+.view.picker { width: 1090px; height: 435px; }
+.view.picker .wallet, .view.picker .tabs, .view.picker .list { display: none; }
+.view:not(.picker) .classes { display: none; }
+
+.classes {
+  flex: 1;
+  display: flex;
+}
+.class-card {
+  position: relative;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  padding: 58px 0 52px;
+  background-size: cover;
+  background-position: center top;
+  cursor: pointer;
+  overflow: hidden;
+}
+.class-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(0,0,0,.25) 0%, rgba(0,0,0,.05) 40%, rgba(0,0,0,.35) 100%);
+  transition: background 200ms;
+}
+.class-card::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  width: 0;
+  height: 3px;
+  background: var(--blue-hover);
+  transform: translateX(-50%);
+  transition: width 200ms;
+}
+.class-card:hover::after { width: 28px; }
+.class-card:hover::before { background: linear-gradient(180deg, rgba(0,0,0,.1), rgba(0,0,0,.2)); }
+.class-card.locked { cursor: not-allowed; }
+.class-card.locked::before { background: rgba(0, 0, 0, .68); }
+.class-card.locked::after { display: none; }
+
+.class-head, .class-icon { position: relative; z-index: 1; text-align: center; }
+.class-name { font-size: 17px; font-weight: 600; text-shadow: 0 1px 3px rgba(0,0,0,.8); }
+.class-sub { margin-top: 4px; font-size: 10px; color: #d4d4d8; text-shadow: 0 1px 3px rgba(0,0,0,.8); }
+.class-card.locked .class-name { color: #d4d4d8; }
+.class-card.locked .class-sub { color: var(--muted); }
+.class-icon i { font-size: 22px; color: #fff; opacity: .9; }
+.class-card.locked .class-icon i { font-size: 18px; color: var(--muted); }
 
 /* ---------- Tabs ---------- */
 
@@ -226,13 +285,22 @@ button {
   letter-spacing: .5px;
   color: var(--muted);
 }
-.pill:hover span { background: var(--accent); color: #04130a; }
-.pill.buy span { color: #facc15; }
-.pill.buy:hover span { background: #facc15; color: #1a1300; }
+.pill:hover span { background: rgba(255, 255, 255, .2); }
+.pill.buy span { min-width: 68px; background: var(--blue); color: #fff; }
+.pill.buy:hover span { background: var(--blue-hover); }
 .pill.buy.confirm span { background: #facc15; color: #1a1300; }
-.pill.owned span { color: var(--accent); }
-.pill.done { cursor: default; }
-.pill.done span { color: var(--accent); background: var(--accent-soft); }
+
+.btn {
+  padding: 6px 13px;
+  font-size: 10px;
+  font-weight: 700;
+  border-radius: 2px;
+  cursor: pointer;
+  transition: background 150ms;
+}
+.btn.spawn { background: var(--blue); color: #fff; border: 1px solid rgba(255,255,255,.15); }
+.btn.spawn:hover { background: var(--blue-hover); }
+.btn.done { cursor: default; color: var(--accent); background: var(--accent-soft); }
 
 /* locked */
 .row.locked { background: rgba(255, 255, 255, .025); }

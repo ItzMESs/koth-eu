@@ -20,4 +20,8 @@ files {
     'ui/index.html',
     'ui/style.css',
     'ui/app.js',
+    'ui/server-banner.js',
+    'ui/img/*.png',
+    'ui/img/*.jpg',
+    'ui/img/*.gif',
 }

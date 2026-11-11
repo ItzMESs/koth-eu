@@ -89,6 +89,8 @@ function render(players, selfId) {
     set('meMoney', `$${n(me.money).toLocaleString('en-US')}`);
 }
 
+if (window.KothServerBanner) window.KothServerBanner.mount(document.getElementById('meBanner'), 92);
+
 window.addEventListener('message', (e) => {
     const d = e.data || {};
     if (d.action === 'show') board.classList.add('open');

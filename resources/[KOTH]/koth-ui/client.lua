@@ -3,7 +3,7 @@ Citizen.CreateThread(
 		Wait(2000)
 		SendNUIMessage({
 			eventName = "showNotification", 
-			args = {message = 'Welcome on Atlantiss KOTH', theme = 'success', time = 5000, progBar = false}
+			args = {message = 'Welcome to MN Network KOTH', theme = 'success', time = 5000, progBar = false}
 		})
 
 		--[[ while (true) do

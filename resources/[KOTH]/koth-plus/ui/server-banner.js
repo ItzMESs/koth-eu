@@ -13,8 +13,8 @@ window.KOTH_SERVER_BANNER = {
         // 'img/banner2.png',
     ],
     rotate: 8,
-    title: 'KOTH EU',
-    subtitle: 'discord.gg/yourserver',
+    title: 'MN NETWORK KOTH',
+    subtitle: 'discord.gg/mnnetwork',
 };
 
 (function () {

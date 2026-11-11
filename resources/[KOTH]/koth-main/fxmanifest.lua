@@ -47,6 +47,7 @@ server_script {
 files {
     'ui/*.html',
     'ui/content/logo.png',
+    'ui/content/logo-wide.png',
     'ui/content/*.ogg',
     'dist/main.js',
     'assets/img/compass.svg',

@@ -5,7 +5,7 @@
 
 -- 		SetDiscordRichPresenceAsset('logo_koth_dmz_dore')
 --         --SetDiscordRichPresenceAssetText('[EU] KOTH')
---         SetDiscordRichPresenceAction(0, 'Discord','https://discord.gg/kotheu')
+--         SetDiscordRichPresenceAction(0, 'Discord','https://discord.gg/mnnetwork')
 
 -- 		Citizen.Wait(5000)
 -- 	end
@@ -13,8 +13,8 @@
 
 
 local discordButton = {
-    {index = 0, name = 'Rejoindre le discord', url = "https://discord.com/invite/atlantiss-koth"},
-    {index = 1, name = 'Aller sur le site', url = "https://atlantiss-rp.com/#accueil"}
+    {index = 0, name = 'Join Discord', url = "https://discord.gg/mnnetwork"},
+    {index = 1, name = 'MN Network', url = "https://discord.gg/mnnetwork"}
 }
 
 Citizen.CreateThread(
@@ -25,7 +25,7 @@ Citizen.CreateThread(
         while true do
             SetDiscordAppId(829032746385932288)
             SetDiscordRichPresenceAsset("logo-1024x1024")
-            SetDiscordRichPresenceAssetText("https://discord.gg/atlantiss-koth")
+            SetDiscordRichPresenceAssetText("MN Network KOTH")
 
             TriggerServerCallback(
                 'onlinePlayers:list',

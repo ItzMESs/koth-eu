@@ -143,7 +143,7 @@ end)
 
 
 
-notWhitelisted = "You are not Authorized to join server. Please join discord.gg/atlantiss-koth ." -- Message displayed when they are not whitelist with the role
+notWhitelisted = "You are not Authorized to join server. Please join discord.gg/mnnetwork ." -- Message displayed when they are not whitelist with the role
 
 
 AddEventHandler('playerConnecting', function(playerName, setKickReason, deferrals)
@@ -172,11 +172,11 @@ AddEventHandler('playerConnecting', function(playerName, setKickReason, deferral
     IsBanned(licenseid, function(isBanned, banData)
 		if isBanned then
 			if tonumber(banData.permanent) == 1 then
-				deferrals.done(('You are banned from Atlantiss KOTH\nReason : %s\nRemaining time : Permanent\nAuthor : %s'):format(banData.reason, banData.sourceName))
+				deferrals.done(('You are banned from MN Network KOTH\nReason : %s\nRemaining time : Permanent\nAuthor : %s'):format(banData.reason, banData.sourceName))
 			else
 				if tonumber(banData.expiration) > os.time() then
 					local timeRemaining = tonumber(banData.expiration) - os.time()
-					deferrals.done(('You are banned from Atlantiss KOTH\nRaison : %s\nTemps Restant : %s\nAuthor : %s'):format(banData.reason, SexyTime(timeRemaining), banData.sourceName))
+					deferrals.done(('You are banned from MN Network KOTH\nRaison : %s\nTemps Restant : %s\nAuthor : %s'):format(banData.reason, SexyTime(timeRemaining), banData.sourceName))
 				else
 					DeleteBan(licenseid)
 					deferrals.done()
@@ -329,11 +329,11 @@ RegisterCommand("ban", function(source, args, rawcommand)
 
 						if expiration > 0 then
 							AddBan(source, licenseid,token, playerip, targetName, sourceName, expiration, reason, 0)
-							DropPlayer(target, ('You are banned from Atlantiss KOTH\nBan ID : %s\nRaison : %s\nTemps Restant : %s\nAuthor : %s'):format(banid,reason, SexyTime(expiration * 3600), sourceName))
+							DropPlayer(target, ('You are banned from MN Network KOTH\nBan ID : %s\nRaison : %s\nTemps Restant : %s\nAuthor : %s'):format(banid,reason, SexyTime(expiration * 3600), sourceName))
 							TriggerEvent("SendLogsBan",target,targetName,banid, "Le staff "..sourceName.." à ban :\n\n**__Name__** : "..targetName.."\n**__IP__** : "..playerip.."\n**__Token__** : "..token.."\n**__Temps__** : "..SexyTime(expiration * 3600).."\n**__Raison__** : "..reason.."")
 						else
 							AddBan(source, licenseid,token, playerip, targetName, sourceName, expiration, reason, 1)
-							DropPlayer(target, ('You are banned from Atlantiss KOTH\nBan ID : %s\nReason : %s\nRemaining time : Permanent\nAuthor : %s'):format(banid,reason, sourceName))
+							DropPlayer(target, ('You are banned from MN Network KOTH\nBan ID : %s\nReason : %s\nRemaining time : Permanent\nAuthor : %s'):format(banid,reason, sourceName))
 							TriggerEvent("SendLogsBan",target,targetName,banid, "Le staff "..sourceName.." à ban :\n\n**__Name__** : "..targetName.."\n**__IP__** : "..playerip.."\n**__Token__** : "..token.."\n**__Temps__** : Permanent\n**__Raison__** : "..reason.."")
 						end
 					else

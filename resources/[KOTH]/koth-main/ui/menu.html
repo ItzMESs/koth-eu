@@ -42,12 +42,15 @@
             letter-spacing: -.5px;
             text-shadow: 0 4px 18px rgba(0, 0, 0, .6);
         }
+        .logo { width: 420px; filter: drop-shadow(0 6px 20px rgba(0,0,0,.6)); }
         .subtitle {
-            margin-top: 2px;
-            font-size: 17px;
-            font-weight: 500;
+            margin-top: 18px;
+            font-size: 26px;
+            font-weight: 800;
+            letter-spacing: 4px;
+            text-shadow: 0 3px 12px rgba(0,0,0,.6);
         }
-        .subtitle span { color: var(--accent); font-weight: 600; }
+        .subtitle span { color: #8b7cf8; }
 
         .buttons { display: flex; gap: 8px; margin-top: 26px; }
         .btn {
@@ -239,8 +242,8 @@
     <!-- ================= Welcome / team select ================= -->
     <div id="menu" class="hidden">
         <div class="screen" id="home">
-            <div class="title">King of The Hill</div>
-            <div class="subtitle">European Region · <span>KOTH EU</span></div>
+            <img class="logo" src="content/logo-wide.png" alt="MN Network KOTH">
+            <div class="subtitle"><span>MN</span> NETWORK</div>
             <div class="buttons">
                 <button class="btn" id="playbtn">PLAY</button>
                 <button class="btn" id="rulesbtn">RULES</button>
@@ -302,7 +305,7 @@
 
 <script>
 const $ = (id) => document.getElementById(id);
-const DISCORD = 'discord.gg/atlantiss-koth';
+const DISCORD = 'discord.gg/mnnetwork';
 
 /* ---------------- welcome menu ---------------- */
 

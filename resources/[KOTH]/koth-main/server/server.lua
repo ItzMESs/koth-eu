@@ -139,46 +139,73 @@ end)
 --Assist
 
 
+-- Removes a player from every team list (handles duplicates). Returns the
+-- player's scoreboard entry (kills / deaths / assists) so it can be kept
+-- when the player switches team.
+function RemovePlayerFromTeams(src)
+	src = tonumber(src)
+	for t = 1, 3 do
+		for i = #Teams[t].members, 1, -1 do
+			if Teams[t].members[i].id == src then table.remove(Teams[t].members, i) end
+		end
+	end
+	for i = #TeamIDPlayer, 1, -1 do
+		if TeamIDPlayer[i].id == src then table.remove(TeamIDPlayer, i) end
+	end
+	local entry
+	for i = #PlayerDataInfo, 1, -1 do
+		if PlayerDataInfo[i].id == src then entry = entry or PlayerDataInfo[i]; table.remove(PlayerDataInfo, i) end
+	end
+	-- recount instead of +1/-1 so the numbers can never drift
+	for t = 1, 3 do Teams[t].count = #Teams[t].members end
+	return entry
+end
+
+local TEAM_INFO = {
+	[1] = { color = "red",   name = "Rouge" },
+	[2] = { color = "blue",  name = "Bleu" },
+	[3] = { color = "green", name = "Vert" },
+}
+
 RegisterNetEvent("Koth-SelectTeam")
 AddEventHandler("Koth-SelectTeam", function(team)
-    local _src = source
-    if team == 1 then -- red
-			if not (VIP_TEAM_BYPASS and IsVip and IsVip(_src)) and (Teams[1].count > Teams[3].count or Teams[1].count > Teams[2].count) then
-				TriggerClientEvent("KOTH-TeamFull",_src,team)
-				return
-			else
-				table.insert(PlayerDataInfo, {id = _src, name = GetPlayerName(_src), kill = 0, xp = 0, money = 0,score = 0, assist = 0, death = 0, color = "red"})
+	local _src = source
+	team = tonumber(team)
+	local info = TEAM_INFO[team]
+	if not info then return end
 
-				Teams[1].count = Teams[1].count + 1
-				table.insert(Teams[1].members,{id = _src, name = GetPlayerName(_src)})
-				TriggerClientEvent("Koth-Team", _src, "Rouge")
-				table.insert(TeamIDPlayer, {id = _src, team = team})
-			end
-    elseif team == 2 then -- blue
-			if not (VIP_TEAM_BYPASS and IsVip and IsVip(_src)) and (Teams[2].count > Teams[1].count or Teams[2].count > Teams[3].count) then
-				TriggerClientEvent("KOTH-TeamFull",_src,team)
-				return
-			else
-				table.insert(PlayerDataInfo, {id = _src, name = GetPlayerName(_src), kill = 0, xp = 0, money = 0,score = 0, assist = 0, death = 0, color = "blue"})
-
-				Teams[2].count = Teams[2].count + 1
-				table.insert(Teams[2].members,{id = _src, name = GetPlayerName(_src)})
-				
-				TriggerClientEvent("Koth-Team", _src, "Bleu")
-				table.insert(TeamIDPlayer, {id = _src, team = team})
-			end
-    elseif team == 3 then -- green
-		if not (VIP_TEAM_BYPASS and IsVip and IsVip(_src)) and (Teams[3].count > Teams[1].count or Teams[3].count > Teams[2].count) then
-			TriggerClientEvent("KOTH-TeamFull",_src,team)
+	-- already in this team (menu opened twice, resource restart...): just respawn there
+	for _, m in pairs(TeamIDPlayer) do
+		if m.id == _src and m.team == team then
+			TriggerClientEvent("Koth-Team", _src, info.name)
 			return
-		else
-			table.insert(PlayerDataInfo, {id = _src, name = GetPlayerName(_src), kill = 0, xp = 0, money = 0,score = 0, assist = 0, death = 0, color = "green"})
-			Teams[3].count = Teams[3].count + 1
-			table.insert(Teams[3].members, {id = _src, name = GetPlayerName(_src)})
-			TriggerClientEvent("Koth-Team", _src, "Vert")
-			table.insert(TeamIDPlayer, {id = _src, team = team})
 		end
-    end
+	end
+
+	-- balance check without counting this player's current team
+	local counts = { #Teams[1].members, #Teams[2].members, #Teams[3].members }
+	for _, m in pairs(TeamIDPlayer) do
+		if m.id == _src and counts[m.team] then counts[m.team] = counts[m.team] - 1 end
+	end
+	local full = false
+	for t = 1, 3 do
+		if t ~= team and counts[team] > counts[t] then full = true end
+	end
+	if full and not (VIP_TEAM_BYPASS and IsVip and IsVip(_src)) then
+		TriggerClientEvent("KOTH-TeamFull", _src, team)
+		return
+	end
+
+	local old = RemovePlayerFromTeams(_src)
+	table.insert(PlayerDataInfo, {
+		id = _src, name = GetPlayerName(_src), color = info.color,
+		kill = old and old.kill or 0, xp = old and old.xp or 0, money = old and old.money or 0,
+		score = old and old.score or 0, assist = old and old.assist or 0, death = old and old.death or 0,
+	})
+	table.insert(Teams[team].members, { id = _src, name = GetPlayerName(_src) })
+	Teams[team].count = #Teams[team].members
+	table.insert(TeamIDPlayer, { id = _src, team = team })
+	TriggerClientEvent("Koth-Team", _src, info.name)
 end)
 
 
@@ -201,46 +228,9 @@ end)
 
 
 RegisterNetEvent("PlayerLeftKothServer")
-AddEventHandler("PlayerLeftKothServer", function(team)
-	print("Team ID = "..team)
-	local _src = source	
-	if team == 1 then
-		Teams[1].count = Teams[1].count - 1
-		for k,v in pairs(Teams[1].members) do
-			if (v.id == _src) then
-				table.remove(Teams[1].members, k)
-			end
-		end
-		for z,m in pairs(TeamIDPlayer) do
-			if (m.id == _src) then
-				table.remove(TeamIDPlayer,z)
-			end
-		end
-	elseif team == 2 then
-		Teams[2].count = Teams[2].count - 1
-		for k,v in pairs(Teams[2].members) do
-			if (v.id == _src) then
-				table.remove(Teams[2].members, k)
-			end
-		end
-		for z,m in pairs(TeamIDPlayer) do
-			if (m.id == _src) then
-				table.remove(TeamIDPlayer, z)
-			end
-		end
-    elseif team == 3 then
-		Teams[3].count = Teams[3].count - 1
-		for k,v in pairs(Teams[3].members) do
-			if (v.id == _src) then
-				table.remove(Teams[3].members, k)
-			end
-		end
-		for z,m in pairs(TeamIDPlayer) do
-			if (m.id == _src) then
-				table.remove(TeamIDPlayer, z)
-			end
-		end
-    end
+AddEventHandler("PlayerLeftKothServer", function()
+	local _src = source
+	if _src and _src ~= "" then RemovePlayerFromTeams(_src) end
 end)
 
 
@@ -397,16 +387,9 @@ end)
 AddEventHandler('playerDropped', function(reason)
 	local _src = source
 	--TriggerClientEvent("PlayerLeftKothServer", _src)
-	for z,m in pairs(TeamIDPlayer) do
-		if (m.id == _src) then
-			TriggerEvent("PlayerLeftKothServer",m.team)
-		end
-	end
-	for k,v in pairs(PlayerDataInfo) do
-		if (v.id == _src) then
-			table.remove(PlayerDataInfo, k)
-		end
-	end
+	-- (before: TriggerEvent("PlayerLeftKothServer") lost the player id, so
+	--  left players stayed in the team lists and their id could be reused)
+	RemovePlayerFromTeams(_src)
 
 
 end)

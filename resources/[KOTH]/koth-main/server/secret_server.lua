@@ -298,6 +298,7 @@ AddEventHandler('baseevents:onPlayerKilled', function(killedBy, data, team)
     local colora = nil
 	--if killer ~= nil then
 
+    local handledKill = false
     for k,v in pairs(TeamIDPlayer) do
         if team == 1 then
             colorv = "red"
@@ -307,7 +308,8 @@ AddEventHandler('baseevents:onPlayerKilled', function(killedBy, data, team)
             colorv = "greeen"
         end
 
-        if (v.id == killedBy) then
+        if (v.id == killedBy) and not handledKill then
+            handledKill = true
             if v.team == 1 then
                 colora = "red"
             elseif v.team == 2 then 

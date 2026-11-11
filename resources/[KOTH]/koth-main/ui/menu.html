@@ -3,7 +3,6 @@
 <head>
     <meta charset="utf-8">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <script src="nui://koth-plus/ui/banners.js"></script>
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.1/css/all.css" integrity="sha384-vp86vTRFVJgpjF9jiIGPEEqYqlDwgyBgEF109VFjmqGmIY/Y4HV4d3Gp2irVfcrp" crossorigin="anonymous">
     <style>
         :root {
@@ -215,8 +214,6 @@
             background: linear-gradient(90deg, rgba(0,0,0,.0), rgba(0,0,0,.55) 20%, rgba(0,0,0,.55) 80%, rgba(0,0,0,0));
         }
         .d-weapon img { max-width: 70%; max-height: 80px; filter: drop-shadow(0 3px 8px rgba(0,0,0,.8)); }
-        .d-banner { width: 420px; margin-top: 12px; box-shadow: 0 10px 30px rgba(0,0,0,.6); text-shadow: none; }
-        .d-using img { height: 22px; vertical-align: middle; margin-right: 6px; filter: drop-shadow(0 2px 4px rgba(0,0,0,.8)); }
         .d-using { margin-top: 12px; font-size: 22px; font-weight: 700; color: #b4b4bb; }
         .d-using b { color: #fff; }
         .d-tags { display: flex; gap: 8px; margin-top: 10px; }
@@ -293,8 +290,8 @@
 
         <div class="d-killer" id="dKiller">
             <div class="d-by">Killed by: <span class="id" id="dKillerId"></span> <span class="name" id="dKillerName"></span></div>
-            <div class="d-banner" id="dBanner"></div>
-            <div class="d-using" id="dUsing"><img id="dWeaponImg" alt=""> Using: <b id="dWeaponName"></b></div>
+            <div class="d-weapon" id="dWeaponBox"><img id="dWeaponImg" alt=""></div>
+            <div class="d-using" id="dUsing">Using: <b id="dWeaponName"></b></div>
             <div class="d-tags" id="dTags"></div>
         </div>
     </div>
@@ -393,11 +390,12 @@ function showDeath(d) {
         $('dKillerId').textContent = d.killer.id != null && d.killer.id >= 0 ? `[${d.killer.id}]` : '';
         $('dKillerName').textContent = d.killer.name;
 
-        const bn = $('dBanner');
-        bn.innerHTML = window.KothBanners ? window.KothBanners.render(d.killer.banner, { name: d.killer.name, sub: d.killer.prestige ? `Prestige ${d.killer.prestige}` : '', height: 100 }) : '';
-        const wi = $('dWeaponImg');
-        if (d.weapon) { wi.style.display = ''; wi.src = `nui://koth-hud/hud/equiped/${d.weapon}.png`; wi.onerror = () => { wi.style.display = 'none'; }; }
-        else wi.style.display = 'none';
+        if (d.weapon) {
+            $('dWeaponBox').classList.remove('hidden');
+            $('dWeaponImg').src = `nui://koth-hud/hud/equiped/${d.weapon}.png`;
+        } else {
+            $('dWeaponBox').classList.add('hidden');
+        }
         $('dUsing').classList.toggle('hidden', !d.weaponName);
         $('dWeaponName').textContent = d.weaponName || '';
 

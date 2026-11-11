@@ -46,15 +46,6 @@ end
 
 local shown = false
 
--- banner / prestige of every player (scoreboard data from the server, every second)
-local playerCards = {}
-RegisterNetEvent("KOTH-HUD:OPEN")
-AddEventHandler("KOTH-HUD:OPEN", function(players)
-    for _, p in pairs(players or {}) do
-        playerCards[p.id] = { banner = p.banner, prestige = p.prestige }
-    end
-end)
-
 -- killerPlayer: client player index of the killer (or nil)
 function ShowDeathScreen(killerPlayer, killerServerId, weaponHash, inVehicle, vehicleName, distance, headshot)
     if shown then return end
@@ -70,8 +61,6 @@ function ShowDeathScreen(killerPlayer, killerServerId, weaponHash, inVehicle, ve
         killer = {
             id = killerServerId,
             name = GetPlayerName(killerPlayer),
-            banner = playerCards[killerServerId] and playerCards[killerServerId].banner or "recruit",
-            prestige = playerCards[killerServerId] and playerCards[killerServerId].prestige or 0,
         }
     end
 

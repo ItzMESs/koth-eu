@@ -172,5 +172,3 @@ html, body { height: 100%; overflow: hidden; background: transparent; }
 .row .vip { color: #facc15; font-size: 10px; margin-right: 5px; }
 .row .pmark { display: inline-grid; place-items: center; width: 15px; height: 17px; margin-right: 5px; font-size: 8px; font-weight: 900; color: #fff; vertical-align: middle;
   background: linear-gradient(160deg, #c084fc, #6d28d9); clip-path: polygon(50% 0, 100% 25%, 100% 75%, 50% 100%, 0 75%, 0 25%); }
-
-.me-banner { margin-top: 18px; }

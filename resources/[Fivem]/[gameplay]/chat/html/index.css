@@ -125,3 +125,52 @@ textarea:focus, input:focus {
 .hidden {
   display: none;
 }
+
+/* ==========================================================
+   KOTH chat rows: [ID] [RANK] Name: message
+   ========================================================== */
+
+.chat-window { border-radius: 2px; }
+.chat-input { width: 30%; }
+.chat-messages { font-size: 1.75vh; margin: 0; padding: 0.6vh 0.4vw; box-sizing: border-box; height: 100%; }
+
+.kmsg {
+  display: flex;
+  align-items: baseline;
+  gap: 0.45vw;
+  padding: 0.25vh 0.5vw 0.25vh 0.45vw;
+  border-left: 3px solid #6b7280;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, .8);
+  line-height: 1.35;
+}
+.kmsg.team1 { border-left-color: #ef4444; }
+.kmsg.team2 { border-left-color: #3b82f6; }
+.kmsg.team3 { border-left-color: #22c55e; }
+.kmsg.sys   { border-left-color: #facc15; }
+
+.kmsg .kid { flex-shrink: 0; font-size: 1.35vh; color: #d4d4d8; font-variant-numeric: tabular-nums; }
+.kmsg .krank {
+  flex-shrink: 0;
+  padding: 0 0.35vw;
+  font-size: 1.3vh;
+  font-weight: 700;
+  border-radius: 2px;
+  color: #fff;
+  text-shadow: none;
+  background: #6b7280;
+}
+.kmsg .krank.VIP   { background: #ca8a04; color: #fff; }
+.kmsg .krank.Staff { background: #dc2626; }
+.kmsg .kpres {
+  flex-shrink: 0;
+  padding: 0 0.3vw;
+  font-size: 1.2vh;
+  font-weight: 700;
+  border-radius: 2px;
+  background: #7c3aed;
+  text-shadow: none;
+}
+.kmsg .kpres.p0 { display: none; }
+.kmsg .kname { flex-shrink: 0; font-weight: 700; }
+.kmsg .ktext { word-break: break-word; }
+.kmsg.sys .kname { color: #facc15; }

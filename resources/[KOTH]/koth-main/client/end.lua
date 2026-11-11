@@ -82,7 +82,7 @@ AddEventHandler("KothEndMatch", function(Victoire,teamwin)
             end
         end)
         Wait(10000)
-        displayDoneMission = true
+        -- displayDoneMission = true  (replaced by the koth-plus end screen)
     else
         teamEnd = teamwin
         startVictoireCamera()
@@ -111,7 +111,7 @@ AddEventHandler("KothEndMatch", function(Victoire,teamwin)
             end
         end)
         Wait(10000)
-        displayDoneMission = true
+        -- displayDoneMission = true  (replaced by the koth-plus end screen)
     end
 end)
 

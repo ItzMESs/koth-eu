@@ -44,6 +44,13 @@ AddEventHandler("onResourceStop", function(res)
     if res == GetCurrentResourceName() and Plus.panel then SetNuiFocus(false, false) end
 end)
 
+-- end of match screen (server: koth-main/server/endgame.lua)
+RegisterNetEvent("KOTH-End:Show")
+AddEventHandler("KOTH-End:Show", function(data)
+    Plus.Send("end", "show", data)
+    PlaySoundFrontend(-1, "RANK_UP", "HUD_AWARDS", true)
+end)
+
 -- helpers
 function Plus.RayFromCamera(distance)
     local rot = GetGameplayCamRot(2)

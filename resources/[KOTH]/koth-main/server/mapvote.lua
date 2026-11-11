@@ -95,6 +95,8 @@ local function startVote()
     chat("A team reached " .. math.floor(MAPVOTE_START) .. " points! Type ^3/mapvote^7 to vote for the next map.")
 end
 
+function MapVoteGetWinner() return MapVote.winner end
+
 -- Used by the admin panel.
 function MapVoteStart() startVote() end
 
@@ -104,6 +106,14 @@ function MapVoteFinish()
     MapVote.active = false
     MapVote.closed = true
     MapVote.winner = currentWinner()
+    if not MapVote.winner then
+        -- nobody voted: pick a random map now (not the current one) so it can be shown
+        local pool = {}
+        for _, zone in ipairs(Config) do
+            if not (GetZone and zone.name == GetZone.name) then pool[#pool + 1] = zone.name end
+        end
+        if #pool > 0 then MapVote.winner = pool[math.random(1, #pool)] end
+    end
     saveResult(MapVote.winner)
     print("^2[MapVote]^7 finished, next map: " .. tostring(MapVote.winner or "random"))
     TriggerClientEvent("KOTH-MapVote:Result", -1, MapVote.winner)

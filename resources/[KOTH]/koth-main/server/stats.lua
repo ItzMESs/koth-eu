@@ -109,6 +109,10 @@ local function loadPlayer(src)
     if not license then return end
     local name = GetPlayerName(src)
     P[src] = P[src] or { license = license, name = name, joined = os.time(), prestige = 0, ks = KILLSTREAK_DEFAULT, d = newDeltas(), w = {} }
+    -- permanent player number (player.id) shown in chat
+    MySQL.Async.fetchAll('SELECT id FROM player WHERE license1 = @l', { ['@l'] = license }, function(r)
+        if P[src] and r and r[1] then P[src].dbId = r[1].id end
+    end)
     MySQL.Async.execute('INSERT IGNORE INTO player_stats (license, name, created) VALUES (@l, @n, @t)',
         { ['@l'] = license, ['@n'] = name, ['@t'] = os.time() }, function()
         MySQL.Async.fetchAll('SELECT prestige, killstreaks FROM player_stats WHERE license = @l', { ['@l'] = license }, function(r)

@@ -285,16 +285,7 @@ Citizen.CreateThread(function()
 			if MapVoteFinish then MapVoteFinish() end -- close map vote, save next map
 			if StatsMatchEnd then StatsMatchEnd(highestIndex) end -- matches / wins (server/stats.lua)
 			TriggerClientEvent("SetGameFinished", -1, Teams[highestIndex])
-			for i,player in pairs(PlayersInZone) do
-				if player.team == highestIndex then
-					TriggerEvent("KothEndMatch",true,Teams[highestIndex].name)
-					TriggerClientEvent("KOTH:ENDGAMEXPAND",-1, 1)
-					Citizen.Wait(0)
-				else
-					TriggerClientEvent("KOTH:ENDGAMEXPAND",-1, 2)
-					TriggerEvent("KothEndMatch",false,Teams[highestIndex].name)
-				end
-			end
+			if EndGameScreen then EndGameScreen(highestIndex, 30) end -- victory / defeat screen + bonus (server/endgame.lua)
 			Wait(30000)
 			local players = GetPlayers()
 			local count = 0

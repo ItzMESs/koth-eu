@@ -390,6 +390,39 @@ function bountyClaimed(c) {
     clearTimeout(bcTimer); bcTimer = setTimeout(() => el.classList.remove('on'), 5000);
 }
 
+/* ================= END OF MATCH ================= */
+let endTimer;
+const mapSlug = (s) => String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+function endShow(d) {
+    const el = $('endScreen');
+    const map = d.nextMap || 'Random';
+    const initials = String(map).split(/\s+/).map(w => w[0]).join('').slice(0, 3).toUpperCase();
+    el.className = `endscreen on ${d.victory ? 'win' : 'lose'}`;
+    el.innerHTML = `
+        <h1>${d.victory ? 'VICTORY!' : 'DEFEAT'}</h1>
+        <div class="restart">Game restarting in <span id="endSec">${d.seconds}</span> seconds.</div>
+        <div class="winner">${esc(d.winner)} WON THE MATCH</div>
+        <div class="nm">NEXT MAP:</div>
+        <div class="card" id="endCard"><div class="ph">${esc(initials)}</div><div class="top"><b>${esc(map)}</b><span>KOTH</span></div></div>
+        <div class="bonus">Personal bonus: <span class="b-money">$${fmt(d.money)}</span> and <span class="b-xp">${fmt(d.xp)}xp!</span></div>`;
+    // map picture from koth-mapvote/ui/img/<slug>.jpg or .png (optional)
+    if (d.nextMap) {
+        const img = new Image();
+        const exts = ['jpg', 'png'];
+        let i = 0;
+        img.onload = () => { const c = $('endCard'); if (c) c.insertBefore(img, c.querySelector('.top')); };
+        img.onerror = () => { i++; if (i < exts.length) img.src = `nui://koth-mapvote/ui/img/${mapSlug(map)}.${exts[i]}`; };
+        img.src = `nui://koth-mapvote/ui/img/${mapSlug(map)}.${exts[0]}`;
+    }
+    let left = Number(d.seconds) || 30;
+    clearInterval(endTimer);
+    endTimer = setInterval(() => {
+        left = Math.max(0, left - 1);
+        const s = $('endSec'); if (s) s.textContent = left;
+        if (left <= 0) clearInterval(endTimer);
+    }, 1000);
+}
+
 /* ================= messages ================= */
 window.addEventListener('message', (e) => {
     const m = e.data || {};
@@ -415,5 +448,6 @@ window.addEventListener('message', (e) => {
         case 'toast': toast(d.text, d.kind); break;
         case 'announce': announce(d); break;
         case 'bigmsg': bigmsg(d); break;
+        case 'end': endShow(d); break;
     }
 });

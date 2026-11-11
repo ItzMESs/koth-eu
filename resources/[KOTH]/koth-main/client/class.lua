@@ -11,107 +11,113 @@ local healNotifSend = true
 
 
 
-po = {}
+-- ============================================================
+--  Medkits (medic) and ammo bags (support) on the ground.
+--  Server: server/server_class.lua
+-- ============================================================
 
--------------------------------------------------------------------------------
--- FUNCTIONS
--------------------------------------------------------------------------------
+local DROP_RADIUS = 2.5          -- metres: stand inside the green circle
+local HEAL_PER_TICK = 10         -- health per second from a medkit
+local AMMO_PER_USE = 60          -- ammo per use from an ammo bag
+local AMMO_COOLDOWN = 15000      -- ms between ammo refills from the same bag
 
--------------------------------------------------------------------------------
--- NET EVENTS
--------------------------------------------------------------------------------
+local MODELS = { med = "prop_ld_health_pack", ammo = "prop_ld_ammo_pack_01" }
+local drops = {}                 -- [id] = { data, obj }
+local lastAmmo = {}              -- [id] = GetGameTimer()
 
-RegisterNetEvent('KOTH:Medic:objCreate')
-AddEventHandler('KOTH:Medic:objCreate', function(src, serverData, deleteCD)
-    po[tostring(src)] = {pickup = CreatePickupRotate(GetHashKey(pickup), serverData.coords.x, serverData.coords.y, serverData.coords.z + 0.1, 0.0, 0.0, 0.0, 512, 1.0), coords = serverData.coords, player = src, team = KOTH.TeamID, showMarker = KOTH.TeamID == serverData.bagTeam, removed = false}
-    for src,data in pairs(po) do
-        SetPickupUncollectable(data.pickup, true)
-    end
-    Citizen.SetTimeout(tonumber(deleteCD), function()
-        po[tostring(src)].removed = true
-    end)
+local function loadModel(name)
+    local h = GetHashKey(name)
+    RequestModel(h)
+    local t = GetGameTimer() + 3000
+    while not HasModelLoaded(h) and GetGameTimer() < t do Wait(0) end
+    return h
+end
+
+RegisterNetEvent("KOTH-Gadget:Add")
+AddEventHandler("KOTH-Gadget:Add", function(d)
+    if drops[d.id] then return end
+    local h = loadModel(MODELS[d.kind] or MODELS.med)
+    local obj = CreateObject(h, d.coords.x, d.coords.y, d.coords.z - 0.9, false, false, false)
+    PlaceObjectOnGroundProperly(obj)
+    FreezeEntityPosition(obj, true)
+    SetEntityCollision(obj, false, false)
+    SetModelAsNoLongerNeeded(h)
+    local c = GetEntityCoords(obj)
+    d.ground = vector3(c.x, c.y, c.z)
+    drops[d.id] = { data = d, obj = obj }
 end)
 
-RegisterNetEvent('KOTH:Medic:objDelete')
-AddEventHandler('KOTH:Medic:objDelete', function(src)
-    if KOTH.Gadgets.Med[tostring(src)] then
-        KOTH.Gadgets.Med[tostring(src)].removed = true
+RegisterNetEvent("KOTH-Gadget:Remove")
+AddEventHandler("KOTH-Gadget:Remove", function(id)
+    local e = drops[id]
+    if e then
+        if DoesEntityExist(e.obj) then DeleteObject(e.obj) end
+        drops[id] = nil
+        lastAmmo[id] = nil
     end
 end)
 
+Citizen.CreateThread(function()
+    Wait(5000)
+    TriggerServerEvent("KOTH-Gadget:Sync")
+end)
 
--------------------------------------------------------------------------------
--- THREADS
--------------------------------------------------------------------------------
-local healNotifSend = false
-local healCount = 0
+-- green circle for own team's drops (ammo bags get a lighter ring)
 Citizen.CreateThread(function()
     while true do
-        Citizen.Wait(0)
-
-        for src,data in pairs(po) do
-            if data.team == KOTH.TeamID and not data.removed then
-                DrawMarker(27, data.coords.x, data.coords.y, data.coords.z-0.8, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 2.0, 2.0, 2.0, 0, 230, 0, 180, false, false, 2, false, false, nil, nil, false)
+        local any = false
+        local me = GetEntityCoords(PlayerPedId())
+        for _, e in pairs(drops) do
+            local d = e.data
+            if d.team == KOTH.TeamID and #(me - d.ground) < 80.0 then
+                any = true
+                local r, g, b = 34, 197, 94
+                if d.kind == "ammo" then r, g, b = 132, 204, 22 end
+                DrawMarker(27, d.ground.x, d.ground.y, d.ground.z + 0.03, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+                    DROP_RADIUS * 2.0, DROP_RADIUS * 2.0, 1.0, r, g, b, 170, false, false, 2, true, nil, nil, false)
             end
-
-            if data.removed then
-                if DoesPickupExist(data.pickup) then
-                    RemovePickup(data.pickup)
-                    --po = {}
-                    table.remove(po, src)
-                end
-            end
-
-
         end
+        Wait(any and 0 or 500)
     end
 end)
 
-
+-- effects for team mates standing in the circle
 Citizen.CreateThread(function()
     while true do
+        Wait(1000)
         local ped = PlayerPedId()
-        local pedCoords = GetEntityCoords(PlayerPedId())
-        Citizen.Wait(100)
-        for src,data in pairs(po) do
-            if data.team == KOTH.TeamID and GetDistanceBetweenCoords(data.coords.x, data.coords.y, data.coords.z, pedCoords, true) <= 10.0 and not data.removed then
-                if GetEntityHealth(ped) < GetEntityMaxHealth(ped) and not IsPlayerDead(PlayerId()) then
-                    SetEntityHealth(ped, GetEntityHealth(ped) + 5)
-                    if GetEntityHealth(ped) > GetEntityMaxHealth(ped) then SetEntityHealth(ped, GetEntityMaxHealth(ped)) end
-                    --healNotifSend = true
-                    if healNotifSend then
-                        local msg = ''
-
-                        if PlayerId() == GetPlayerFromServerId(data.player) then
-                            msg = '+ Healed'
-                        else
-                            msg = '+ Healed by '..GetPlayerName(GetPlayerFromServerId(data.player))
+        if not IsEntityDead(ped) then
+            local me = GetEntityCoords(ped)
+            for id, e in pairs(drops) do
+                local d = e.data
+                if d.team == KOTH.TeamID and #(me - d.ground) <= DROP_RADIUS + 0.5 then
+                    if d.kind == "med" then
+                        local hp, max = GetEntityHealth(ped), GetEntityMaxHealth(ped)
+                        if hp < max then
+                            SetEntityHealth(ped, math.min(max, hp + HEAL_PER_TICK))
+                            TriggerServerEvent("KOTH-Gadget:Used", id)
                         end
-
-                        TriggerEvent("KOTH:RightNotification",-1, -1, msg)
-                        if PlayerId() == data.player then
-                            if class == "medic" then
-                                TriggerServerEvent("KOTH-REVIVEMEDICHERRE", Pass["tokenserver"],1)
-                            end
+                    elseif d.kind == "ammo" then
+                        local _, w = GetCurrentPedWeapon(ped, true)
+                        if w and w ~= GetHashKey("WEAPON_UNARMED") and GetGameTimer() - (lastAmmo[id] or 0) > AMMO_COOLDOWN then
+                            lastAmmo[id] = GetGameTimer()
+                            AddAmmoToPed(ped, w, AMMO_PER_USE)
+                            PlaySoundFrontend(-1, "PICK_UP", "HUD_FRONTEND_DEFAULT_SOUNDSET", true)
+                            local who = GetPlayerFromServerId(d.owner)
+                            TriggerEvent("KOTH:RightNotification", -1, -1, "+" .. AMMO_PER_USE .. " ammo" .. ((who ~= -1 and who ~= PlayerId()) and (" from " .. GetPlayerName(who)) or ""))
+                            TriggerServerEvent("KOTH-Gadget:Used", id)
                         end
-                        healNotifSend = false
                     end
-                    healCount = healCount + 1
-                    Citizen.Wait(1200)
                 end
             end
         end
     end
 end)
 
-
-Citizen.CreateThread(function()
-    while true do
-        Citizen.Wait(850)
-        if healCount > 2 then
-            healCount = 0
-            healNotifSend = true
-        end
+AddEventHandler("onResourceStop", function(res)
+    if res ~= GetCurrentResourceName() then return end
+    for _, e in pairs(drops) do
+        if DoesEntityExist(e.obj) then DeleteObject(e.obj) end
     end
 end)
 

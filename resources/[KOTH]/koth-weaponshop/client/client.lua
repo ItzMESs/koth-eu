@@ -379,15 +379,21 @@ Citizen.CreateThread(function()
                 elseif WeaponSelected == "repairkit" then
                     if not CoolDown then
                         local veh = GetVehicleInDirection()
-                        local ServerID = GetPlayerServerId(NetworkGetEntityOwner(veh))
-                        if DoesEntityExist(veh) then
+                        local ServerID = veh and GetPlayerServerId(NetworkGetEntityOwner(veh))
+                        if veh and DoesEntityExist(veh) then
                             CoolDown = true
                             TaskStartScenarioInPlace(GetPlayerPed(-1), "PROP_HUMAN_BUM_BIN", 0, true)
                             Citizen.Wait(10000)
                             TriggerServerEvent("KothRepaireCar", VehToNet(veh), ServerID)
                             ClearPedTasksImmediately(GetPlayerPed(-1))
                         else
-                            TriggerEvent("KOTH:CenterNotification", "No vehicle here")
+                            -- no vehicle in front: drop an ammo bag for the team
+                            CoolDown = true
+                            TaskStartScenarioInPlace(GetPlayerPed(-1), "CODE_HUMAN_MEDIC_KNEEL", 0, true)
+                            Citizen.Wait(1200)
+                            ClearPedTasks(GetPlayerPed(-1))
+                            TriggerServerEvent("KOTH:Medic:objCreate", GetEntityCoords(PlayerPedId()), CDtime, "ammo")
+                            exports['koth-hud']:SendUIMessage({startCooldown = CDtime})
                         end
                     else
                         TriggerEvent("KOTH:CenterNotification", "Cooldown active !")
@@ -395,7 +401,7 @@ Citizen.CreateThread(function()
                 elseif WeaponSelected == "medkit" then
                     if not CoolDown then
                         CoolDown = true
-                        TriggerServerEvent("KOTH:Medic:objCreate", GetEntityCoords(PlayerPedId()), CDtime)
+                        TriggerServerEvent("KOTH:Medic:objCreate", GetEntityCoords(PlayerPedId()), CDtime, "med")
                         exports['koth-hud']:SendUIMessage({startCooldown = CDtime})
                     else
                         TriggerEvent("KOTH:CenterNotification", "Cooldown active !")

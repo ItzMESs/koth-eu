@@ -282,6 +282,7 @@ Citizen.CreateThread(function()
 		end
 		
 		if Teams[highestIndex].points >= 100.0 then -- did the game end?
+			if MapVoteFinish then MapVoteFinish() end -- close map vote, save next map
 			TriggerClientEvent("SetGameFinished", -1, Teams[highestIndex])
 			for i,player in pairs(PlayersInZone) do
 				if player.team == highestIndex then

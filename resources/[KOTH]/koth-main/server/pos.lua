@@ -17,6 +17,21 @@ end)
 function InitZone()
     print("Init Zone")
     Zone = Config
+
+    -- map chosen by the players' vote last match (see server/mapvote.lua)
+    local vote = GetVote()
+    if vote and vote.map then
+        SaveResourceFile(GetCurrentResourceName(), "data/voteinfo.json", "{}", -1)
+        for _, z in ipairs(Config) do
+            if z.name == vote.map then
+                GetZone = z
+                print("Name Server "..GetZone.name.." (map vote)")
+                Action = true
+                return
+            end
+        end
+    end
+
     GetZone = Zone[math.random(1, #Config)]
     if GetZone.name == ZoneData.name then
         print("Change Zone")
@@ -43,10 +58,10 @@ function GetZones()
 	return data and json.decode(data)
 end
 
---function GetVote()
---	local data = LoadResourceFile('koth-main', 'data/voteinfo.json')
---	return data and json.decode(data)
---end
+function GetVote()
+	local data = LoadResourceFile('koth-main', 'data/voteinfo.json')
+	return data and json.decode(data)
+end
 
 RegisterCommand("testf",function(source)
     if source == 0 then

@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.1/css/all.css" integrity="sha384-vp86vTRFVJgpjF9jiIGPEEqYqlDwgyBgEF109VFjmqGmIY/Y4HV4d3Gp2irVfcrp" crossorigin="anonymous">
+    <link rel="stylesheet" href="style.css">
+    <script defer src="script.js"></script>
+</head>
+<body>
+    <!-- small banner shown to everyone when the vote starts / ends -->
+    <div class="banner" id="banner"></div>
+
+    <div class="vote" id="vote">
+        <div class="panel">
+            <header>
+                <h1 id="title">Vote for the next map</h1>
+                <span class="sub" id="subtitle">Voting closes when a team reaches 100 points</span>
+                <div class="leader" id="leader">
+                    <span class="lbl">LEADING</span>
+                    <span class="team" id="leadTeam">-</span>
+                    <div class="lead-bar"><span id="leadBar"></span></div>
+                    <span class="pts"><b id="leadPoints">0</b> / 100</span>
+                </div>
+                <button id="closebtn" title="Close (Esc)"><i class="fas fa-times"></i></button>
+            </header>
+
+            <div class="cards" id="cards"></div>
+
+            <footer>
+                <span>Press <span class="kbd">1</span>–<span class="kbd">0</span> or click a map to vote · you can change your vote</span>
+                <span class="count"><b id="total">0</b> / <span id="players">0</span> players voted</span>
+                <span class="my-vote" id="mine"></span>
+            </footer>
+        </div>
+    </div>
+</body>
+</html>

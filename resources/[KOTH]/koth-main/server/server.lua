@@ -143,7 +143,7 @@ RegisterNetEvent("Koth-SelectTeam")
 AddEventHandler("Koth-SelectTeam", function(team)
     local _src = source
     if team == 1 then -- red
-			if Teams[1].count > Teams[3].count or Teams[1].count > Teams[2].count then
+			if not (VIP_TEAM_BYPASS and IsVip and IsVip(_src)) and (Teams[1].count > Teams[3].count or Teams[1].count > Teams[2].count) then
 				TriggerClientEvent("KOTH-TeamFull",_src,team)
 				return
 			else
@@ -155,7 +155,7 @@ AddEventHandler("Koth-SelectTeam", function(team)
 				table.insert(TeamIDPlayer, {id = _src, team = team})
 			end
     elseif team == 2 then -- blue
-			if Teams[2].count > Teams[1].count or Teams[2].count > Teams[3].count then
+			if not (VIP_TEAM_BYPASS and IsVip and IsVip(_src)) and (Teams[2].count > Teams[1].count or Teams[2].count > Teams[3].count) then
 				TriggerClientEvent("KOTH-TeamFull",_src,team)
 				return
 			else
@@ -168,7 +168,7 @@ AddEventHandler("Koth-SelectTeam", function(team)
 				table.insert(TeamIDPlayer, {id = _src, team = team})
 			end
     elseif team == 3 then -- green
-		if Teams[3].count > Teams[1].count or Teams[3].count > Teams[2].count then
+		if not (VIP_TEAM_BYPASS and IsVip and IsVip(_src)) and (Teams[3].count > Teams[1].count or Teams[3].count > Teams[2].count) then
 			TriggerClientEvent("KOTH-TeamFull",_src,team)
 			return
 		else

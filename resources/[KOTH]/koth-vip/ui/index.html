@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.1/css/all.css" integrity="sha384-vp86vTRFVJgpjF9jiIGPEEqYqlDwgyBgEF109VFjmqGmIY/Y4HV4d3Gp2irVfcrp" crossorigin="anonymous">
+    <link rel="stylesheet" href="style.css">
+    <script defer src="script.js"></script>
+</head>
+<body>
+    <div class="wrap" id="wrap">
+        <div class="panel" id="panel">
+            <header>
+                <div class="crown"><i class="fas fa-crown"></i></div>
+                <div class="head-text">
+                    <h1>VIP Menu</h1>
+                    <span id="who">-</span>
+                </div>
+                <div class="badge" id="badge">VIP ACTIVE</div>
+                <button id="closebtn" title="Close (Esc)"><i class="fas fa-times"></i></button>
+            </header>
+
+            <div class="body">
+                <nav class="side" id="tabs">
+                    <button data-tab="overview" class="active"><i class="fas fa-home"></i> Overview</button>
+                    <button data-tab="weapon"><i class="fas fa-crosshairs"></i> Weapon</button>
+                    <button data-tab="vehicle"><i class="fas fa-car"></i> Vehicle</button>
+                    <button data-tab="settings"><i class="fas fa-cog"></i> Settings</button>
+                </nav>
+
+                <main class="content" id="content"></main>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

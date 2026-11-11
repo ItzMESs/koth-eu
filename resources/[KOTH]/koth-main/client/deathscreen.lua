@@ -85,3 +85,8 @@ end
 function SetDeathHoldProgress(p)
     SendNUIMessage({ type = "deathHold", progress = p })
 end
+
+-- used by koth-vip to show the held weapon
+exports("GetWeaponInfo", function(hash)
+    return GetDeathWeaponInfo(hash)
+end)

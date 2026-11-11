@@ -32,7 +32,6 @@ client_scripts {
     'client/props/*.lua',
 
     'client/*.lua',
-    'client/vip/*.lua',
 
 }
 
@@ -43,7 +42,6 @@ server_script {
 
     'ConfigAdmin.lua',
     'server/*.lua',
-    'server/**/*.lua',
 
 }
 

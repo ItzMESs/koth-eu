@@ -111,6 +111,9 @@ end)
 function GiveMoney(_src ,token,ammount)
     local _srcs = _src
     local money = 0
+    if IsVip and IsVip(_src) and type(ammount) == "number" and ammount > 0 then
+        ammount = math.floor(ammount * VIP_BOOST) -- VIP bonus (server/vip.lua)
+    end
     if token == motsdepasse["tokenserver"] then
         local identifier = GetIdentifierFromId(_srcs)
         if identifier then
@@ -162,6 +165,9 @@ end)
 
 function GiveLevel(_src, token,ammount)
     local exp = 0
+    if IsVip and IsVip(_src) and type(ammount) == "number" and ammount > 0 then
+        ammount = math.floor(ammount * VIP_BOOST) -- VIP bonus (server/vip.lua)
+    end
     
     if token == motsdepasse["tokenserverlvel"] then
         local identifier = GetIdentifierFromId(_src)

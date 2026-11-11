@@ -168,3 +168,5 @@ html, body { height: 100%; overflow: hidden; background: transparent; }
 
 .row.self { background: rgba(250, 204, 21, .18) !important; }
 .row.self .c-name { color: #fde047; }
+
+.row .vip { color: #facc15; font-size: 10px; margin-right: 5px; }
